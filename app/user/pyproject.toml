@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "user"
+version = "0.1.0"
+description = "The user service"
+authors = ["copper-boy <sermed512@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.87.0"
+uvicorn = {extras = ["standard"], version = "^0.19.0"}
+fastapi-jwt-auth = "^0.5.0"
+pydantic = {extras = ["email"], version = "^1.10.2"}
+sqlalchemy = "^1.4.44"
+alembic = "^1.8.1"
+asyncpg = "^0.27.0"
+sqladmin = "^0.7.0"
+loguru = "^0.6.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+psycopg2-binary = "^2.9.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

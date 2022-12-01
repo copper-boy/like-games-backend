@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "poker"
+version = "0.1.0"
+description = "The poker service"
+authors = ["copper-boy <sermed512@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.85.1"
+tortoise-orm = {extras = ["asyncpg"], version = "^0.19.2"}
+aiohttp = "^3.8.3"
+uvicorn = {extras = ["standard"], version = "^0.19.0"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

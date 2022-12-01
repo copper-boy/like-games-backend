@@ -1,0 +1,31 @@
+# netcat build
+FROM ubuntu:latest
+
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    net-tools \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    netcat \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN while !nc -z user_db 5432; do sleep 1; done
+
+# python build
+FROM python:3.10
+
+WORKDIR /app
+
+COPY . .
+
+RUN python -m pip install --upgrade pip
+RUN python -m pip install poetry
+RUN python -m poetry config virtualenvs.create false && \
+    python -m poetry install --no-interaction --no-ansi
+
+
+CMD echo "[+] Run user" && \
+    uvicorn main:app --reload --host 0.0.0.0 --port 8080
