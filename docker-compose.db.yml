@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  pot_db:
+    image: postgres:latest
+    volumes:
+      - postgres_data_pot:/var/lib/postgresql/data/
+    env_file:
+      - .docker.env
+      - .env
+    environment:
+      POSTGRES_USER: ${PG_POT_USER}
+      POSTGRES_PASSWORD: ${PG_POT_PASSWORD}
+      POSTGRES_DB: ${PG_POT_DB}
+    expose:
+      - 5432
+  user_db:
+    image: postgres:latest
+    volumes:
+      - postgres_data_user:/var/lib/postgresql/data/
+    env_file:
+      - .docker.env
+      - .env
+    environment:
+      POSTGRES_USER: ${PG_USER_USER}
+      POSTGRES_PASSWORD: ${PG_USER_PASSWORD}
+      POSTGRES_DB: ${PG_USER_DB}
+    expose:
+      - 5432
+
+volumes:
+  postgres_data_pot:
+  postgres_data_user:

@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  web:
+    container_name: web
+    image: nginx:latest
+    depends_on:
+      - user_service
+      - pot_service
+    ports:
+      - '80:80'
+    volumes:
+      - ./env/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - web-root:/var/www/html
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - web-root:/var/www/html
+    depends_on:
+      - web
+    command: certonly --webroot --webroot-path=/var/www/html --email sermed512@gmail.com --agree-tos --no-eff-email --force-renewal -d likepoker.online -d www.likepoker.online
+  pot_service:
+    image: like-games-pot:latest
+    build: ./app/pot/
+    volumes:
+      - ./app/pot/app/:/app/
+    env_file:
+      - .admin.env
+      - .docker.env
+      - .env
+      - .python.env
+      - .site.env
+    expose:
+      - 8080
+    depends_on:
+      - pot_db
+  user_service:
+    image: like-games-user:latest
+    build: ./app/user/
+    volumes:
+      - ./app/user/app/:/app/
+    env_file:
+      - .admin.env
+      - .docker.env
+      - .env
+      - .jwt.env
+      - .python.env
+      - .telegram.env
+    expose:
+      - 8080
+    depends_on:
+      - user_db
+
+volumes:
+  certbot-etc:
+  certbot-var:
+  web-root:
