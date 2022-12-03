@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 
 from db.base import Base
-from orm.pot import PotModel
+from orm import *
 
 target_metadata = Base.metadata
 
@@ -32,7 +32,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 def get_url() -> str:
-    url = getenv(key='POT_DATABASE_ALEMBIC_URI', default='sqlite:///app/pot.db')
+    url = getenv(key="POT_DATABASE_ALEMBIC_URI")
     return url
 
 

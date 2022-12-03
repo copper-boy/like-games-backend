@@ -5,12 +5,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from orm import RoundModel
-
-from structures import enums, exceptions
 from store.base import BaseAccessor
+from structures import enums, exceptions
 
 
 class RoundAccessor(BaseAccessor):
+    def __init__(self, *args, **kwargs) -> None:
+        super(BaseAccessor, self).__init__(*args, **kwargs)
+
+        self.to_select = {
+            enums.RoundTypeEnum.preflop: enums.RoundTypeEnum.flop,
+            enums.RoundTypeEnum.flop: enums.RoundTypeEnum.river,
+            enums.RoundTypeEnum.river: enums.RoundTypeEnum.turn,
+            enums.RoundTypeEnum.turn: enums.RoundTypeEnum.showdown,
+            enums.RoundTypeEnum.showdown: enums.RoundTypeEnum.preflop,
+        }
+
     async def create_round(self, session: AsyncSession) -> RoundModel:
         to_return = RoundModel()
 
@@ -38,26 +48,10 @@ class RoundAccessor(BaseAccessor):
 
         return to_return.scalar()
 
-    async def call_next_round(
-        self, session: AsyncSession, round_id: int
-    ) -> RoundModel:
+    async def call_next_round(self, session: AsyncSession, round_id: int) -> RoundModel:
         round = await self.get_round_by(session=session, where=(RoundModel.id == round_id))
-
         if not round.round_ended:
             raise exceptions.DatabaseAccessorError
 
-        match round.type:
-            case enums.RoundTypeEnum.preflop:
-                to_update = enums.RoundTypeEnum.flop
-            case enums.RoundTypeEnum.flop:
-                to_update = enums.RoundTypeEnum.river
-            case enums.RoundTypeEnum.river:
-                to_update = enums.RoundTypeEnum.turn
-            case enums.RoundTypeEnum.turn:
-                to_update = enums.RoundTypeEnum.showdown
-            case enums.RoundTypeEnum.showdown:
-                to_update = enums.RoundTypeEnum.preflop
-            case _:
-                raise exceptions.DatabaseAccessorError
-
+        to_update = self.to_select.get(round.type, None)
         await self.update_round(session=session, round_id=round.id, type=to_update)

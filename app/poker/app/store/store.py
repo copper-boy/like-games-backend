@@ -10,6 +10,7 @@ from .game import (
     LogicDeckAccessor,
 )
 from .integration import IntegrationUserAccessor
+from .ws.accessor import WSAccessor
 
 
 class Store:
@@ -24,6 +25,7 @@ class Store:
         self.game_user_accessor = GameUserAccessor(self)
         self.logic_deck_accessor = LogicDeckAccessor(self)
         self.integration_user_accessor = IntegrationUserAccessor(self)
+        self.ws_accessor = WSAccessor(self)
 
     async def connect(self) -> None:
         await self.aiohttp_accessor.connect()

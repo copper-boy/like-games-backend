@@ -10,6 +10,7 @@ from .game import (
     UserSchema,
 )
 from .integration import IntegrationUserSchema
+from .ws import WSEventSchema
 
 __all__ = (
     "CardSchema",
@@ -22,4 +23,5 @@ __all__ = (
     "PlayerSchema",
     "UserSchema",
     "IntegrationUserSchema",
+    "WSEventSchema",
 )

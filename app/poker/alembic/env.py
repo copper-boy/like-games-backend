@@ -32,7 +32,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 def get_url() -> str:
-    url = getenv(key="USER_DATABASE_ALEMBIC_URI")
+    url = getenv(key="POKER_DATABASE_ALEMBIC_URI")
     return url
 
 
