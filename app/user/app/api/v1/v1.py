@@ -38,7 +38,7 @@ async def registration(
             detail=f"user with {user.email=} already exits",
         )
 
-    password_len = len(user.password)
+    password_len = len(user_data.password)
 
     if password_len < 8:
         raise HTTPException(

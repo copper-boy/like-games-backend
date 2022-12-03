@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/view/{filter}/{value}",
+    path="/view/{f}/{value}",
     response_description="Returns the user by filter",
     response_model=UserViewSchema,
     status_code=status.HTTP_200_OK,
