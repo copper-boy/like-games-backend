@@ -1,6 +1,6 @@
 from fastapi.websockets import WebSocket
 
-from core.tools import factory
+from core import tools
 from schemas import WSEventSchema
 from structures.exceptions import WSAlreadyConnectedError
 from structures.ws import WSConnection
@@ -19,7 +19,7 @@ class WSManager(BaseWSManager, BaseWSMessageManager):
         if is_connected:
             raise WSAlreadyConnectedError
 
-        connection = factory.connection_factory.build(websocket=websocket, user_id=user_id)
+        connection = tools.factory.connection_factory.build(websocket=websocket, user_id=user_id)
         self._connections[user_id] = connection
 
         return connection

@@ -11,7 +11,7 @@ from structures import enums, exceptions
 
 class RoundAccessor(BaseAccessor):
     def __init__(self, *args, **kwargs) -> None:
-        super(BaseAccessor, self).__init__(*args, **kwargs)
+        super(RoundAccessor, self).__init__(*args, **kwargs)
 
         self.to_select = {
             enums.RoundTypeEnum.preflop: enums.RoundTypeEnum.flop,
