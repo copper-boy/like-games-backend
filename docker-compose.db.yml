@@ -1,6 +1,19 @@
-version: '3'
+version: "3"
 
 services:
+  poker_db:
+    image: postgres:latest
+    volumes:
+      - postgres_data_poker:/var/lib/postgresql/data/
+    env_file:
+      - .docker.env
+      - .env
+    environment:
+      POSTGRES_USER: ${PG_POKER_USER}
+      POSTGRES_PASSWORD: ${PG_POKER_PASSWORD}
+      POSTGRES_DB: ${PG_POKER_DB}
+    expose:
+      - 5432
   pot_db:
     image: postgres:latest
     volumes:
@@ -29,5 +42,6 @@ services:
       - 5432
 
 volumes:
+  postgres_data_poker:
   postgres_data_pot:
   postgres_data_user:

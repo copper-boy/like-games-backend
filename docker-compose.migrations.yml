@@ -1,19 +1,19 @@
-version: '3'
+version: "3"
 
 services:
-  migrations_user_service:
-    image: like-games-migrations_user_service:latest
+  migrations_poker_service:
+    image: like-games-migrations_poker_service:latest
     build:
-      context: ./app/user/
+      context: ./app/poker
       dockerfile: Dockerfile.migrations
-    volumes:
-      - ./app/user/:/app/
     env_file:
       - .docker.env
       - .env
       - .migrations.python.env
+    volumes:
+      - ./app/poker/:/app/
     depends_on:
-     - user_db
+      - poker_db
     restart: on-failure
   migrations_pot_service:
     image: like-games-migrations_pot_service:latest
@@ -28,4 +28,18 @@ services:
       - ./app/pot/:/app/
     depends_on:
       - pot_db
+    restart: on-failure
+  migrations_user_service:
+    image: like-games-migrations_user_service:latest
+    build:
+      context: ./app/user/
+      dockerfile: Dockerfile.migrations
+    volumes:
+      - ./app/user/:/app/
+    env_file:
+      - .docker.env
+      - .env
+      - .migrations.python.env
+    depends_on:
+      - user_db
     restart: on-failure
