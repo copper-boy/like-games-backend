@@ -10,7 +10,7 @@ AsyncCallable = TypeVar(
 
 
 class WSAccessor(BaseAccessor):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: tuple, **kwargs: dict) -> None:
         super(WSAccessor, self).__init__(*args, **kwargs)
 
         self.handlers: dict[str, AsyncCallable] = {}

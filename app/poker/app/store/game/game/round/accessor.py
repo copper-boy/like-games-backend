@@ -10,7 +10,7 @@ from structures import enums, exceptions
 
 
 class RoundAccessor(BaseAccessor):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: tuple, **kwargs: dict) -> None:
         super(RoundAccessor, self).__init__(*args, **kwargs)
 
         self.to_select = {

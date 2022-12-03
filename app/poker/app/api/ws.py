@@ -21,7 +21,7 @@ async def _ws_endpoint(ws_connection: WSConnection) -> None:
 
 
 @router.websocket(
-    path="/ws",
+    path="/api.poker/ws",
 )
 async def ws(
     websocket: WebSocket,

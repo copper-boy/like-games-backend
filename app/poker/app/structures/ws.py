@@ -1,26 +1,24 @@
-from asyncio import Task
+from dataclasses import dataclass
 
 from fastapi.websockets import WebSocket
 
 from schemas import WSEventSchema
 
 
+@dataclass
 class BaseWSConnection:
     websocket: WebSocket
 
 
-class BaseMetaTimeoutTask(type):
-    timeout_task: Task | None = None
-
-
-class MetaTimeoutTask(BaseMetaTimeoutTask):
-    def __new__(cls, *args, **kwargs) -> ...:
+class MetaTimeoutTask(type):
+    def __new__(cls, *args: tuple, **kwargs: dict) -> ...:
         to_return = super().__new__(cls, *args, **kwargs)
         to_return.timeout_task = None
 
         return to_return
 
 
+@dataclass
 class WSConnection(BaseWSConnection, metaclass=MetaTimeoutTask):
     user_id: int
 

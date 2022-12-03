@@ -1,8 +1,9 @@
+import token
+
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import token
 from core import tools
 from orm import UserModel
 

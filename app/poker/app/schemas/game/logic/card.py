@@ -8,6 +8,7 @@ class CardSchema(BaseModel):
     rank: str
     suit: str
 
+    @classmethod
     @validator("rank")
     def rank_validator(cls, v: str) -> str:
         value = v.upper()
@@ -16,6 +17,7 @@ class CardSchema(BaseModel):
 
         return value
 
+    @classmethod
     @validator("suit")
     def suit_validator(cls, v: str) -> str:
         value = v.lower()

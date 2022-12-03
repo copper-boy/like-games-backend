@@ -29,7 +29,7 @@ class WSManager(BaseWSManager, BaseWSMessageManager):
         await ws_connection.websocket.close()
 
     def connection(self, user_id: int) -> WSConnection:
-        connection = self._connections[user_id]
+        connection = self._connections.get(user_id)
 
         return connection
 

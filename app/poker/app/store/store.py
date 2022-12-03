@@ -1,3 +1,5 @@
+from handlers import setup_handlers
+
 from .aiohttp_session.accessor import SessionAccessor
 from .game import (
     CardAccessor,
@@ -28,6 +30,7 @@ class Store:
         self.ws_accessor = WSAccessor(self)
 
     async def connect(self) -> None:
+        await setup_handlers()
         await self.aiohttp_accessor.connect()
 
     async def disconnect(self) -> None:

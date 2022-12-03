@@ -1,2 +1,2 @@
-async def setup_handlers():
+async def setup_handlers() -> None:
     ...
