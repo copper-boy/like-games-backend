@@ -2,6 +2,8 @@ from typing import Awaitable, Callable, TypeVar
 
 from schemas import WSEventSchema
 from store.base import BaseAccessor
+from structures.command import Command
+from structures.exceptions import WSCommandError
 from structures.ws import WSConnection
 
 AsyncCallable = TypeVar(
@@ -13,11 +15,13 @@ class WSAccessor(BaseAccessor):
     def __init__(self, *args: tuple, **kwargs: dict) -> None:
         super(WSAccessor, self).__init__(*args, **kwargs)
 
-        self.handlers: dict[str, AsyncCallable] = {}
+        self.handlers: dict[Command, AsyncCallable] = {}
 
-    def register_handler(self, command: str, function: AsyncCallable) -> None:
+    def register_handler(self, command: Command, function: AsyncCallable) -> None:
         self.handlers[command] = function
 
     async def handle(self, event: WSEventSchema, websocket: WSConnection) -> None:
-        command_handler = self.handlers[event.command]
-        await command_handler(event=event, websocket=websocket)
+        for handler, function in self.handlers.items():
+            if handler.command == event.command:
+                return await function(event=event, websocket=websocket)
+        raise WSCommandError

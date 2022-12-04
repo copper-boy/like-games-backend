@@ -12,14 +12,16 @@ class WSManager(BaseWSManager, BaseWSMessageManager):
     def __init__(self) -> None:
         super(WSManager, self).__init__()
 
-    async def accept(self, websocket: WebSocket, user_id: int) -> WSConnection:
+    async def accept(self, session_id: int, websocket: WebSocket, user_id: int) -> WSConnection:
         await websocket.accept()
 
         is_connected = self.connection(user_id=user_id)
         if is_connected:
             raise WSAlreadyConnectedError
 
-        connection = tools.factory.connection_factory.build(websocket=websocket, user_id=user_id)
+        connection = tools.factory.connection_factory.build(
+            session_id=session_id, websocket=websocket, user_id=user_id
+        )
         self._connections[user_id] = connection
 
         return connection
@@ -43,3 +45,15 @@ class WSManager(BaseWSManager, BaseWSMessageManager):
         to_dict = event.dict()
 
         await connection.websocket.send_json(data=to_dict)
+
+
+class WSManagerList:
+    def __init__(self) -> None:
+        self.managers: dict[int, WSManager] = {}
+
+    def get(self, session_id: int) -> WSManager:
+        exists = self.managers.get(session_id, None)
+        if exists:
+            return exists
+        self.managers[session_id] = WSManager()
+        return self.managers[session_id]

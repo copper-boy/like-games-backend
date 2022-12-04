@@ -27,6 +27,7 @@ class RoundTypeEnum(str, Enum):
 class PlayerActionEnum(str, Enum):
     unknown = "unknown"
     fold = "fold"
+    check = "check"
     call = "call"
     bet = "bet"
     up = "up"

@@ -20,7 +20,9 @@ class MetaTimeoutTask(type):
 
 @dataclass
 class WSConnection(BaseWSConnection, metaclass=MetaTimeoutTask):
+    session_id: int
     user_id: int
+    player_id: int | None = None
 
     async def read(self) -> WSEventSchema:
         json = await self.websocket.receive_json()

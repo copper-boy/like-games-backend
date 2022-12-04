@@ -11,7 +11,7 @@ class BaseWSManager(ABC):
         self._connections: dict[int, WSConnection] = {}
 
     @abstractmethod
-    async def accept(self, websocket: WebSocket, user_id: int) -> WSConnection:
+    async def accept(self, session_id: int, websocket: WebSocket, user_id: int) -> WSConnection:
         ...
 
     @abstractmethod

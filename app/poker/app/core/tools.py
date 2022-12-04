@@ -1,7 +1,7 @@
 from factory import Factory
 from store import Store
-from ws import WSManager
+from ws import WSManagerList
 
 factory = Factory()
 store = Store()
-ws_manager = WSManager()
+ws_managers = WSManagerList()

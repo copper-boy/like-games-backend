@@ -25,9 +25,17 @@ class DeckAccessor(BaseAccessor):
 
         return to_return
 
+    async def is_already_taken(self, session: AsyncSession, deck_id: int) -> bool:
+        deck = await self.get_deck_by(session=session, where=(DeckModel.id == deck_id))
+
+        return bool(deck.session)
+
     async def get_deck_by(self, session: AsyncSession, where: Any) -> DeckModel:
         to_return = await session.execute(
-            select(DeckModel).where(where).options(joinedload(DeckModel.cards))
+            select(DeckModel)
+            .where(where)
+            .options(joinedload(DeckModel.cards))
+            .options(joinedload(DeckModel.session))
         )
 
         return to_return.scalar()

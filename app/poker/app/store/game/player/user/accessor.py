@@ -17,14 +17,13 @@ class UserAccessor(BaseAccessor):
         return to_return
 
     async def is_have_player(self, session: AsyncSession, user_id: int) -> bool:
-        cursor = await session.execute(
-            select(UserModel).where(UserModel.id == user_id).options(joinedload(UserModel.player))
-        )
-        to_check = cursor.scalar()
+        user = await self.get_user_by(session=session, where=(UserModel.id == user_id))
 
-        return bool(to_check.player)
+        return bool(user.player)
 
     async def get_user_by(self, session: AsyncSession, where: Any) -> UserModel:
-        to_return = await session.execute(select(UserModel).where(where))
+        to_return = await session.execute(
+            select(UserModel).where(where).options(joinedload(UserModel.player))
+        )
 
         return to_return.scalar()

@@ -1,3 +1,6 @@
-from .manager import WSManager
+from .manager import WSManager, WSManagerList
 
-__all__ = ("WSManager",)
+__all__ = (
+    "WSManager",
+    "WSManagerList",
+)

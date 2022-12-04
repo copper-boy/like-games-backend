@@ -4,7 +4,6 @@ from starlette.responses import HTMLResponse
 
 from api import router as api_router
 from core import middlewares, tools
-from handlers import setup_handlers
 
 
 def create_application() -> FastAPI:
@@ -13,7 +12,7 @@ def create_application() -> FastAPI:
         docs_url="/api.poker/docs",
         redoc_url="/api.poker/redoc",
     )
-    application.include_router(api_router)
+    application.include_router(api_router, prefix="/api.poker")
 
     @application.on_event(event_type="startup")
     async def startup() -> None:
@@ -37,3 +36,46 @@ app = create_application()
 )
 async def root() -> dict:
     return {"service": {"status": "Bad", "health": "Okay", "production_ready": False}}
+
+
+@app.get(
+    path="/api.poker/home",
+    status_code=status.HTTP_200_OK,
+)
+async def home() -> HTMLResponse:
+    return HTMLResponse(
+        """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<button onclick="sendMessage(event)">Send</button>
+
+<script>
+    let ws = new WebSocket("ws://localhost/api.poker/ws/1");
+
+    ws.onopen = (event) => {
+        console.log("connected");
+    };
+    ws.onmessage = (event) => {
+        console.log(event.data);
+    }
+
+    function sendMessage(event) {
+        const msg = {
+            command: "mecards",
+        };
+
+        ws.send(JSON.stringify(msg));
+
+        event.preventDefault();
+    }
+</script>
+</body>
+</html>
+"""
+    )

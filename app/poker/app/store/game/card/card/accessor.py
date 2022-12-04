@@ -30,7 +30,7 @@ class CardAccessor(BaseAccessor):
             update(CardModel).where(CardModel.id == card_id).values(position=position, to_id=to_id)
         )
 
-    async def get_card_by(self, session: AsyncSession, where: Any) -> CardModel:
+    async def get_cards_by(self, session: AsyncSession, where: Any) -> list[CardModel]:
         to_return = await session.execute(select(CardModel).where(where))
 
-        return to_return.scalar()
+        return to_return.scalars().all()

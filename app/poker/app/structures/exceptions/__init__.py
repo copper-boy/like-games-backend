@@ -1,6 +1,13 @@
 from .game.errors import BaseGameError, DeckError, NotAcceptablePositionError
 from .store.errors import AccessorError, BaseStoreError, DatabaseAccessorError, DatabaseError
-from .ws.errors import BaseWSError, WSAlreadyConnectedError, WSConnectionError
+from .ws.errors import (
+    BaseWSError,
+    WSAlreadyConnectedError,
+    WSCommandError,
+    WSConnectionError,
+    WSMessageError,
+    WSStateError,
+)
 
 __all__ = (
     "BaseGameError",
@@ -11,6 +18,9 @@ __all__ = (
     "DatabaseAccessorError",
     "DatabaseError",
     "BaseWSError",
-    "WSConnectionError",
     "WSAlreadyConnectedError",
+    "WSCommandError",
+    "WSConnectionError",
+    "WSMessageError",
+    "WSStateError",
 )

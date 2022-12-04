@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from fastapi.param_functions import Body, Depends, Query
+from fastapi.param_functions import Body, Depends, Header, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -13,15 +13,14 @@ router = APIRouter()
 @router.get(
     path="/filter/sessions/count",
     status_code=status.HTTP_200_OK,
-    response_model=list[SessionSchema],
 )
-async def filter_sessions(
+async def filter_count(
     session: AsyncSession = Depends(depends.get_session),
-    type: GameTypeEnum = Body(default=GameTypeEnum.texas),
-    max_players: int = Body(default=9),
-    small_blind: int = Body(default=50),
-    chips_to_join: int = Body(default=10000),
-) -> list[SessionSchema]:
+    type: GameTypeEnum = Header(default=GameTypeEnum.texas),
+    max_players: int = Header(default=9),
+    small_blind: int = Header(default=50),
+    chips_to_join: int = Header(default=10000),
+) -> int:
     to_return = await tools.store.game_session_accessor.get_filter_count(
         session=session,
         type=type,
@@ -30,7 +29,7 @@ async def filter_sessions(
         chips_to_join=chips_to_join,
     )
 
-    return to_return
+    return {"count": to_return}
 
 
 @router.get(

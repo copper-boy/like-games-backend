@@ -8,3 +8,5 @@ class DeckModel(Base):
     id = Column(Integer, primary_key=True)
 
     cards = relationship("CardModel", back_populates="deck")
+
+    session = relationship("SessionModel", back_populates="deck")
