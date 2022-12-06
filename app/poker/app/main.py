@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from starlette import status
 from starlette.responses import HTMLResponse
 
+import handlers  # noqa
 from api import router as api_router
 from core import middlewares, tools
 
@@ -62,12 +63,15 @@ async def home() -> HTMLResponse:
         console.log("connected");
     };
     ws.onmessage = (event) => {
-        console.log(event.data);
+        console.log(event.data.length);
     }
 
     function sendMessage(event) {
         const msg = {
-            command: "mecards",
+            event: "helper",
+            payload: {
+                "to_filter": "commands",
+            }
         };
 
         ws.send(JSON.stringify(msg));

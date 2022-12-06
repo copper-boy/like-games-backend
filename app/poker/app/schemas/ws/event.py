@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 
+from .payload import WSPayloadSchema
+
 
 class WSEventSchema(BaseModel):
-    command: str
-    payload: dict | None = None
+    event: str
+
+    payload: WSPayloadSchema

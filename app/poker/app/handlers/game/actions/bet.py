@@ -1,31 +1,32 @@
 from core import tools
 from db.session import session as sessionmaker
-from schemas import BetPayloadSchema, WSEventSchema
+from misc import router
+from schemas import WSEventSchema
 from structures.enums import PlayerActionEnum
+from structures.exceptions import WSCommandError
 from structures.ws import WSConnection
 from utils import action, bet, can_release, helpers
 
-from . import allin
 
-
-async def bet_handler(event: WSEventSchema, websocket: WSConnection) -> None:
-    payload = BetPayloadSchema.parse_obj(event.payload)
+@router.action(to_filter="bet")
+async def bet_handler(data: WSEventSchema, ws: WSConnection) -> None:
+    ws_bet = data.payload.data.get("bet")
 
     async with sessionmaker.begin() as session:
-        s = await helpers.get_session_with_raise(session=session, session_id=websocket.session_id)
-        player = await helpers.get_player_by_id(session=session, player_id=websocket.player_id)
+        s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
+        player = await helpers.get_player_by_id(session=session, player_id=ws.player_id)
 
-        if payload.bet >= player.game_chips:
-            return await allin.allin_handler(event=event, websocket=websocket)
+        if ws_bet >= player.game_chips:
+            raise WSCommandError
 
         can_release.release_bet_or_raise(
             player=player,
             current_player=s.current_player,
             big_blind=s.game.big_blind,
-            bet=payload.bet,
+            bet=ws_bet,
         )
 
-        to_bet = bet.do_bet(session=session, player=player, bet=payload.bet)
+        to_bet = bet.do_bet(session=session, player=player, bet=ws_bet)
         await action.release_action(
             session=session,
             session_id=s.id,
@@ -36,12 +37,14 @@ async def bet_handler(event: WSEventSchema, websocket: WSConnection) -> None:
         )
 
     answer_event = WSEventSchema(
-        command=event.command,
+        event="action",
         payload={
-            "action": PlayerActionEnum.bet,
-            "bet": to_bet,
-            "current_player": s.current_player,
+            "to_filter": data.payload.to_filter,
+            "data": {
+                "action": PlayerActionEnum.bet,
+                "bet": to_bet,
+                "current_player": s.current_player,
+            },
         },
     )
-    manager = tools.ws_managers.get(websocket.session_id)
-    await manager.broadcast_json(event=answer_event)
+    await ws.manager.broadcast_json(event=answer_event)

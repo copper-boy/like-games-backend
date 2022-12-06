@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from fastapi.websockets import WebSocket
 
@@ -22,6 +23,7 @@ class MetaTimeoutTask(type):
 class WSConnection(BaseWSConnection, metaclass=MetaTimeoutTask):
     session_id: int
     user_id: int
+    manager: Any = None
     player_id: int | None = None
 
     async def read(self) -> WSEventSchema:

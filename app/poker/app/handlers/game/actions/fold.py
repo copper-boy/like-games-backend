@@ -1,15 +1,17 @@
 from core import tools
 from db.session import session as sessionmaker
+from misc import router
 from schemas import WSEventSchema
 from structures.enums import PlayerActionEnum
 from structures.ws import WSConnection
 from utils import action, bet, can_release, helpers
 
 
-async def fold_handler(event: WSEventSchema, websocket: WSConnection) -> None:
+@router.action(to_filter="fold")
+async def fold_handler(data: WSEventSchema, ws: WSConnection) -> None:
     async with sessionmaker.begin() as session:
-        s = await helpers.get_session_with_raise(session=session, session_id=websocket.session_id)
-        player = await helpers.get_player_by_id(session=session, player_id=websocket.player_id)
+        s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
+        player = await helpers.get_player_by_id(session=session, player_id=ws.player_id)
 
         can_release.release_or_raise(player=player, current_player=s.current_player)
 
@@ -24,12 +26,14 @@ async def fold_handler(event: WSEventSchema, websocket: WSConnection) -> None:
         )
 
     answer_event = WSEventSchema(
-        command=event.command,
+        event="action",
         payload={
-            "action": PlayerActionEnum.fold,
-            "bet": 0,
-            "current_player": s.current_player,
+            "to_filter": data.payload.to_filter,
+            "data": {
+                "action": PlayerActionEnum.fold,
+                "bet": 0,
+                "current_player": s.current_player,
+            },
         },
     )
-    manager = tools.ws_managers.get(websocket.session_id)
-    await manager.broadcast_json(event=answer_event)
+    await ws.manager.broadcast_json(event=answer_event)

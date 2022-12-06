@@ -6,6 +6,7 @@ from starlette import status
 
 from core import tools
 from db.session import session as sessionmaker
+from misc import router as ws_router
 from schemas import IntegrationUserSchema, WSEventSchema
 from structures.exceptions import WSAlreadyConnectedError
 from structures.ws import WSConnection
@@ -16,15 +17,23 @@ router = APIRouter()
 
 
 async def _ws_endpoint(manager: WSManager, ws_connection: WSConnection) -> None:
+    ws_connection.manager = manager
+
     while True:
-        event = await ws_connection.read()
+        data = await ws_connection.read()
 
         try:
-            await tools.store.ws_accessor.handle(event=event, websocket=ws_connection)
+            await ws_router.event(data=data, ws=ws_connection)
         except Exception as e:
             logger.exception(e)
-            bad_event = WSEventSchema(command=event.command, payload={"message": "error"})
-            await manager.personal_json(event=bad_event, connection=ws_connection)
+            bad_event = WSEventSchema(
+                event="error",
+                payload={
+                    "to_filter": data.payload.to_filter,
+                    "data": {"exception": e},
+                },
+            )
+            await ws_connection.manager.personal_json(event=bad_event, connection=ws)
 
 
 @router.websocket(
@@ -57,7 +66,7 @@ async def ws(
         )
     ws_connection.player_id = player.id
 
-    await manager.broadcast_json(event=WSEventSchema(command="connect"))
+    # await manager.broadcast_json(event=WSEventSchema(command="connect"))
 
     try:
         await _ws_endpoint(manager=manager, ws_connection=ws_connection)
@@ -65,4 +74,4 @@ async def ws(
         logger.exception(e)
         await manager.remove(user_id=iuser.id)
 
-    await manager.broadcast_json(event=WSEventSchema(command="disconnect"))
+    # await manager.broadcast_json(event=WSEventSchema(command="disconnect"))

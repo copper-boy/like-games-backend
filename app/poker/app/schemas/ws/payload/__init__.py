@@ -1,9 +1,3 @@
-from .bet import BetPayloadSchema
-from .commands import CommandPayloadSchema
-from .playercards import PlayercardsPayloadSchema
+from .payload import WSPayloadSchema
 
-__all__ = (
-    "BetPayloadSchema",
-    "CommandPayloadSchema",
-    "PlayercardsPayloadSchema",
-)
+__all__ = ("WSPayloadSchema",)

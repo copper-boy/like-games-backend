@@ -10,7 +10,7 @@ from .game import (
     UserSchema,
 )
 from .integration import IntegrationUserSchema
-from .ws import BetPayloadSchema, CommandPayloadSchema, PlayercardsPayloadSchema, WSEventSchema
+from .ws import WSEventSchema
 
 __all__ = (
     "CardSchema",
@@ -23,8 +23,5 @@ __all__ = (
     "PlayerSchema",
     "UserSchema",
     "IntegrationUserSchema",
-    "BetPayloadSchema",
-    "CommandPayloadSchema",
-    "PlayercardsPayloadSchema",
     "WSEventSchema",
 )
