@@ -50,7 +50,7 @@ class SessionAccessor(BaseAccessor):
     async def set_next_player(self, session: AsyncSession, session_id: int) -> None:
         s = await self.get_session_by(session=session, where=(SessionModel.id == session_id))
         players = await self.store.game_player_accessor.get_players_by(
-            session=s, where=(PlayerModel.session_id == s.id)
+            session=session, where=(PlayerModel.session_id == s.id)
         )
 
         for index, player in enumerate(players, start=0):

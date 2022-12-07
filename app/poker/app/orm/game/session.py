@@ -15,7 +15,6 @@ class SessionModel(Base):
     game = relationship("GameModel", back_populates="sessions")
 
     players = relationship("PlayerModel", back_populates="session")
-    players_connected = Column(Integer, default=0)
 
     small_blind_position = Column(Integer, default=0)
     big_blind_position = Column(Integer, default=0)

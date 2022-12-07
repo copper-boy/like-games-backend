@@ -127,7 +127,6 @@ async def ws_endpoint(
             code=status.WS_1013_TRY_AGAIN_LATER,
             reason="already connected",
         )
-
     try:
         new_balance, player = await helpers.new_player(
             manager=ws_connection.manager,
@@ -148,10 +147,7 @@ async def ws_endpoint(
         )
         await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
 
-        return await websocket.close(
-            code=status.WS_1013_TRY_AGAIN_LATER,
-            reason="connection error",
-        )
+        return await manager.remove(user_id=ws_connection.user_id)
     except WSStateError as e:
         logger.exception(e)
         return await websocket.close(

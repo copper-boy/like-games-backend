@@ -20,6 +20,11 @@ class SessionSchema(BaseModel):
 
     round_id: int
 
+    max_bet: int
+
+    pot: int
+
+
     class Config:
         orm_mode = True
 

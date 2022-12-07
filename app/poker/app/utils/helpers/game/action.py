@@ -7,6 +7,8 @@ from structures.enums import PlayerActionEnum
 async def release_action(
     session: AsyncSession,
     session_id: int,
+    round_bet: int,
+    max_bet: int,
     pot: int,
     player_id: int,
     bet: int,
@@ -18,6 +20,7 @@ async def release_action(
         values={
             "last_player": player_id,
             "last_player_action": action,
+            "max_bet": round_bet if round_bet > max_bet else max_bet,
             "pot": pot + bet,
         },
     )

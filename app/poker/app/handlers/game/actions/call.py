@@ -22,6 +22,8 @@ async def call_handler(data: WSEventSchema, ws: WSConnection) -> None:
         await helpers.release_action(
             session=session,
             session_id=s.id,
+            round_bet=player.round_bet,
+            max_bet=s.max_bet,
             pot=s.pot,
             player_id=player.id,
             bet=to_call,

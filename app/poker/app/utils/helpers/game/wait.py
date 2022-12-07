@@ -5,15 +5,14 @@ from ws import WSManager
 
 
 async def wait_for_action(manager: WSManager, player_id: int, user_id: int) -> None:
-    await manager.personal_json(
+    await manager.broadcast_json(
         event=WSEventSchema(
             event="game", payload={"to_filter": "wait_for_action", "data": {"timeout": 10}}
-        ),
-        connection=manager.connection(user_id=user_id),
+        )
     )
     await sleep(10)
 
-    await manager.personal_json(
+    await manager.broadcast_json(
         event=WSEventSchema(
             event="game",
             payload={
@@ -23,6 +22,5 @@ async def wait_for_action(manager: WSManager, player_id: int, user_id: int) -> N
                     "timeout": None,
                 },
             },
-        ),
-        connection=manager.connection(user_id=user_id),
+        )
     )
