@@ -10,7 +10,7 @@ from schemas import GameSchema
 router = APIRouter()
 
 
-@router.post(
+@router.get(
     path="/view/game/{game_id}",
     response_model=GameSchema,
     status_code=status.HTTP_200_OK,

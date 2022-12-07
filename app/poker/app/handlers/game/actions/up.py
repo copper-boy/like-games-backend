@@ -1,13 +1,12 @@
-from core import tools
 from db.session import session as sessionmaker
 from misc import router
 from schemas import WSEventSchema
 from structures.enums import PlayerActionEnum
 from structures.ws import WSConnection
-from utils import action, bet, can_release, helpers
+from utils import helpers
 
 
-@router.action(to_filter="up")
+@router.game(to_filter="up")
 async def up_handler(data: WSEventSchema, ws: WSConnection) -> None:
     ws_bet = data.payload.data.get("bet")
 
@@ -17,15 +16,15 @@ async def up_handler(data: WSEventSchema, ws: WSConnection) -> None:
             session=session, player_id=ws.player_id, last_player=s.last_player
         )
 
-        can_release.release_up_or_raise(
+        helpers.release_up_or_raise(
             player=player,
             current_player=s.current_player,
             big_blind=s.game.big_blind,
             bet=ws_bet,
         )
 
-        to_up = bet.do_up(session=session, player=player)
-        await action.release_action(
+        to_up = await helpers.do_up(session=session, player=player, bet=ws_bet)
+        await helpers.release_action(
             session=session,
             session_id=s.id,
             pot=s.pot,
@@ -35,7 +34,7 @@ async def up_handler(data: WSEventSchema, ws: WSConnection) -> None:
         )
 
     answer_event = WSEventSchema(
-        event="action",
+        event="game",
         payload={
             "to_filter": data.payload.to_filter,
             "data": {

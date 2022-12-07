@@ -1,12 +1,8 @@
 from pydantic import BaseModel
 
-from structures.enums import GameTypeEnum
-
 
 class GameSchema(BaseModel):
     id: int
-
-    type: GameTypeEnum
 
     min_players: int
     max_players: int

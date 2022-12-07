@@ -5,7 +5,6 @@ from starlette import status
 
 from core import depends, tools
 from schemas import GameSchema
-from structures.enums import GameTypeEnum
 from utils import decorators
 
 router = APIRouter()
@@ -19,7 +18,6 @@ router = APIRouter()
 @decorators.admin_required(target="api_token")
 async def create_game(
     api_token: str = Query(...),
-    type: GameTypeEnum = Body(default=GameTypeEnum.texas),
     min_players: int = Body(default=2),
     max_players: int = Body(default=9),
     chips_to_join: int = Body(default=10000),
@@ -29,7 +27,6 @@ async def create_game(
 ) -> GameSchema:
     async with session.begin_nested() as nested_session:
         to_return = await tools.store.game_accessor.create_game(
-            type=type,
             min_players=min_players,
             max_players=max_players,
             chips_to_join=chips_to_join,

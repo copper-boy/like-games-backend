@@ -1,14 +1,11 @@
-from sqlalchemy import Column, Enum, Integer
+from sqlalchemy import Column, Integer
 from sqlalchemy.orm import relationship
 
 from db.base import Base
-from structures.enums import GameTypeEnum
 
 
 class GameModel(Base):
     id = Column(Integer, primary_key=True)
-
-    type = Column(Enum(GameTypeEnum), default=GameTypeEnum.texas)
 
     min_players = Column(Integer, default=2)
     max_players = Column(Integer, default=9)

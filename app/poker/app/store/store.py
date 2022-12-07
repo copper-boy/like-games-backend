@@ -9,7 +9,7 @@ from .game import (
     GameUserAccessor,
     LogicDeckAccessor,
 )
-from .integration import IntegrationUserAccessor
+from .integration import IntegrationPotAccessor, IntegrationUserAccessor
 
 
 class Store:
@@ -23,6 +23,7 @@ class Store:
         self.game_session_accessor = GameSessionAccessor(self)
         self.game_user_accessor = GameUserAccessor(self)
         self.logic_deck_accessor = LogicDeckAccessor(self)
+        self.integration_pot_accessor = IntegrationPotAccessor(self)
         self.integration_user_accessor = IntegrationUserAccessor(self)
 
     async def connect(self) -> None:

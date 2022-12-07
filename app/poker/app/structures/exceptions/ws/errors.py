@@ -2,6 +2,18 @@ class BaseWSError(Exception):
     ...
 
 
+class WSEventError(BaseWSError):
+    ...
+
+
+class WSUnhandledEventError(WSEventError):
+    ...
+
+
+class WSUnhandledEndpointError(WSUnhandledEventError):
+    ...
+
+
 class WSMessageError(BaseWSError):
     ...
 

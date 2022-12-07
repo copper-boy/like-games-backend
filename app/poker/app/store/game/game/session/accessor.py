@@ -4,9 +4,8 @@ from sqlalchemy import and_, desc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from orm import DeckModel, GameModel, PlayerModel, RoundModel, SessionModel, UserModel
+from orm import GameModel, PlayerModel, SessionModel
 from store.base import BaseAccessor
-from structures.enums import GameTypeEnum
 from structures.exceptions import DatabaseAccessorError
 
 
@@ -14,20 +13,20 @@ class SessionAccessor(BaseAccessor):
     async def create_session(
         self,
         session: AsyncSession,
-        deck: DeckModel,
-        game: GameModel,
-        round: RoundModel,
+        deck_id: int,
+        game_id: int,
+        round_id: int,
     ) -> SessionModel:
         is_deck_have_session = await self.store.deck_accessor.is_already_taken(
-            session=session, deck_id=deck.id
+            session=session, deck_id=deck_id
         )
         is_round_have_session = await self.store.game_round_accessor.is_already_taken(
-            session=session, round_id=round.id
+            session=session, round_id=round_id
         )
         if is_deck_have_session or is_round_have_session:
             raise DatabaseAccessorError
 
-        to_return = SessionModel(deck=deck, game=game, round=round)
+        to_return = SessionModel(deck_id=deck_id, game_id=game_id, round_id=round_id)
 
         session.add(to_return)
 
@@ -39,18 +38,23 @@ class SessionAccessor(BaseAccessor):
         )
 
     async def get_session_by(self, session: AsyncSession, where: Any) -> SessionModel:
-        to_return = await session.execute(select(SessionModel).where(where))
+        to_return = await session.execute(
+            select(SessionModel)
+            .where(where)
+            .options(joinedload(SessionModel.game))
+            .options(joinedload(SessionModel.round))
+        )
 
         return to_return.scalar()
 
     async def set_next_player(self, session: AsyncSession, session_id: int) -> None:
-        session = await self.get_session_by(session=session, where=(SessionModel.id == session_id))
+        s = await self.get_session_by(session=session, where=(SessionModel.id == session_id))
         players = await self.store.game_player_accessor.get_players_by(
-            session=session, where=(PlayerModel.session_id == session.id)
+            session=s, where=(PlayerModel.session_id == s.id)
         )
 
         for index, player in enumerate(players, start=0):
-            if player.id == session.current_player:
+            if player.id == s.current_player:
                 try:
                     to_set = players[index + 1].id
                 except IndexError:
@@ -58,15 +62,21 @@ class SessionAccessor(BaseAccessor):
                 finally:
                     break
         await self.update_session(
-            session=session, session_id=session.id, values={"current_player": to_set}  # noqa
+            session=session, session_id=s.id, values={"current_player": to_set}  # noqa
         )
 
-    async def filter_sessions(
+    async def players(self, session: AsyncSession, s: SessionModel, new: int) -> None:
+        await self.update_session(
+            session=session,
+            session_id=s.id,
+            values={"players_connected": s.players_connected + new},
+        )
+
+    async def filter_sessions(  # noqa
         self,
         session: AsyncSession,
         offset: int,
         limit: int,
-        type: GameTypeEnum = GameTypeEnum.texas,
         max_players: int = 9,
         small_blind: int = 50,
         chips_to_join: int = 10000,
@@ -74,8 +84,7 @@ class SessionAccessor(BaseAccessor):
         to_return = await session.execute(
             select(SessionModel)
             .filter(
-                (GameModel.type == type)
-                & (GameModel.max_players == max_players)
+                (GameModel.max_players == max_players)
                 & (GameModel.small_blind == small_blind)
                 & (GameModel.chips_to_join == chips_to_join)
             )
@@ -85,8 +94,6 @@ class SessionAccessor(BaseAccessor):
                     SessionModel.in_progress == False,
                 )
             )
-            .options(joinedload(SessionModel.game))
-            .options(joinedload(SessionModel.round))
             .join(GameModel)
             .order_by(desc(SessionModel.players_connected))
             .offset(offset)
@@ -98,7 +105,6 @@ class SessionAccessor(BaseAccessor):
     async def get_filter_count(
         self,
         session: AsyncSession,
-        type: GameTypeEnum = GameTypeEnum.texas,
         max_players: int = 9,
         small_blind: int = 50,
         chips_to_join: int = 10000,
@@ -106,12 +112,16 @@ class SessionAccessor(BaseAccessor):
         to_return = await session.execute(
             select(func.count(SessionModel.id))
             .filter(
-                (GameModel.type == type)
-                & (GameModel.max_players == max_players)
+                (GameModel.max_players == max_players)
                 & (GameModel.small_blind == small_blind)
                 & (GameModel.chips_to_join == chips_to_join)
             )
-            .where(SessionModel.players_connected < GameModel.max_players)
+            .where(
+                and_(
+                    SessionModel.players_connected < GameModel.max_players,
+                    SessionModel.in_progress == False,
+                )
+            )
             .join(GameModel)
             .select_from(SessionModel)
         )

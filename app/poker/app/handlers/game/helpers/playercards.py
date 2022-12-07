@@ -11,7 +11,7 @@ from structures.ws import WSConnection
 from utils import helpers
 
 
-@router.helper(to_filter="playercards")
+@router.game(to_filter="playercards")
 async def playercards_handler(data: WSEventSchema, ws: WSConnection) -> None:
     player_id = data.payload.data.get("player_id")
 
@@ -32,7 +32,7 @@ async def playercards_handler(data: WSEventSchema, ws: WSConnection) -> None:
             raise WSCommandError
 
     answer_event = WSEventSchema(
-        event="helper",
+        event="game",
         payload={
             "to_filter": "playercards",
             "data": helpers.cards_to_pydantic(cards=cards),

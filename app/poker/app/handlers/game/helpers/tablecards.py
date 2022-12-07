@@ -10,7 +10,7 @@ from structures.ws import WSConnection
 from utils import helpers
 
 
-@router.helper(to_filter="tablecards")
+@router.game(to_filter="tablecards")
 async def tablecards_handler(data: WSEventSchema, ws: WSConnection) -> None:
     async with sessionmaker.begin() as session:
         s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
@@ -24,7 +24,7 @@ async def tablecards_handler(data: WSEventSchema, ws: WSConnection) -> None:
         )
 
     answer_event = WSEventSchema(
-        event="helper",
+        event="game",
         payload={
             "to_filter": "mecards",
             "data": helpers.cards_to_pydantic(cards=cards),

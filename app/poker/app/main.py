@@ -54,6 +54,7 @@ async def home() -> HTMLResponse:
 </head>
 <body>
 
+<input id="text" type="text">
 <button onclick="sendMessage(event)">Send</button>
 
 <script>
@@ -63,19 +64,27 @@ async def home() -> HTMLResponse:
         console.log("connected");
     };
     ws.onmessage = (event) => {
-        console.log(event.data.length);
+        console.log(event.data);
     }
 
     function sendMessage(event) {
-        const msg = {
-            event: "helper",
+        const msg1 = {
+            event: "game",
             payload: {
-                "to_filter": "commands",
+                "to_filter": "session",
             }
-        };
-
-        ws.send(JSON.stringify(msg));
-
+        }
+        const msg2 = {
+            event: "game",
+            payload: {
+                "to_filter": "allin",
+            }
+        }
+        if (document.getElementById("text").value == 1) {
+            ws.send(JSON.stringify(msg1));   
+        } else {
+            ws.send(JSON.stringify(msg2));
+        }
         event.preventDefault();
     }
 </script>

@@ -1,4 +1,3 @@
-from core import tools
 from misc import router
 from schemas import WSEventSchema
 from structures.ws import WSConnection

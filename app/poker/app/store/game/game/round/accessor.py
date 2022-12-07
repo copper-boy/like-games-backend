@@ -40,18 +40,22 @@ class RoundAccessor(BaseAccessor):
             to_check.session
         )  # If no relationship is assigned to RoundModel.session then bool cast will return False.
 
-    async def update_round(self, session: AsyncSession, round_id: int, **kwargs: dict) -> None:
-        await session.execute(update(RoundModel).where(RoundModel.id == round_id).values(**kwargs))
+    async def update_round(self, session: AsyncSession, round_id: int, values: dict) -> None:
+        await session.execute(update(RoundModel).where(RoundModel.id == round_id).values(**values))
 
     async def get_round_by(self, session: AsyncSession, where: Any) -> RoundModel:
         to_return = await session.execute(select(RoundModel).where(where))
 
         return to_return.scalar()
 
-    async def call_next_round(self, session: AsyncSession, round_id: int) -> RoundModel:
+    async def call_next_round(self, session: AsyncSession, round_id: int) -> enums.RoundTypeEnum:
         round = await self.get_round_by(session=session, where=(RoundModel.id == round_id))
         if not round.round_ended:
             raise exceptions.DatabaseAccessorError
 
         to_update = self.to_select.get(round.type, None)
-        await self.update_round(session=session, round_id=round.id, type=to_update)
+        await self.update_round(
+            session=session, round_id=round.id, values={"type": to_update, "round_ended": False}
+        )
+
+        return to_update

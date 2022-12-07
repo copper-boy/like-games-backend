@@ -7,7 +7,7 @@ from db.base import Base
 class PlayerModel(Base):
     id = Column(Integer, primary_key=True)
 
-    game_chips = Column(Integer, default=0)
+    game_chips = Column(Integer, default=10000)
 
     in_game_order = Column(Integer, default=0)
 

@@ -4,7 +4,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from orm import DeckModel
+from orm import CardModel, DeckModel
 from store.base import BaseAccessor
 from structures.enums import CardPositionEnum
 from structures.exceptions.game.errors import NotAcceptablePositionError
@@ -40,27 +40,29 @@ class DeckAccessor(BaseAccessor):
 
         return to_return.scalar()
 
-    async def give_max_cards(
+    async def shuffle_deck(self, session: AsyncSession, deck_id: int) -> None:
+        deck = await self.get_deck_by(session=session, where=(DeckModel.id == deck_id))
+        cards_to_shuffle = self.store.logic_deck_accessor.make_deck(with_shuffle=True)
+
+        for index, card in enumerate(cards_to_shuffle.deck, start=0):
+            card_id = deck.cards[index].id
+            await self.store.card_accessor.set_new(session=session, card_id=card_id, card=card)
+
+    async def give_cards(
         self,
         session: AsyncSession,
         deck_id: int,
         position: CardPositionEnum,
         to_id: int,
+        count: int,
     ) -> None:
         deck = await self.get_deck_by(session=session, where=(DeckModel.id == deck_id))
 
-        match position:
-            case CardPositionEnum.player:
-                to_access, max_value = 0, 2
-            case CardPositionEnum.table:
-                to_access, max_value = 0, 5
-            case _:
-                raise NotAcceptablePositionError
-
+        to_access = 0
         for card in deck.cards:
             if card.to_id != 0 and card.position != CardPositionEnum.deck:
                 continue
-            if to_access == max_value:
+            if to_access == count:
                 break
             await self.store.card_accessor.update_card(
                 session=session, card_id=card.id, position=position, to_id=to_id

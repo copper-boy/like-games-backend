@@ -23,7 +23,7 @@ def get_database_settings() -> DatabaseSettings:
 
 class SiteSettings(BaseSettings):
     AUTH_SITE_BASE_URL: str
-    CHAT_SITE_BASE_URL: str
+    POT_SITE_BASE_URL: str
 
 
 @lru_cache()

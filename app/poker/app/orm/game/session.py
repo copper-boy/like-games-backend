@@ -17,7 +17,6 @@ class SessionModel(Base):
     players = relationship("PlayerModel", back_populates="session")
     players_connected = Column(Integer, default=0)
 
-    dealer_position = Column(Integer, default=0)
     small_blind_position = Column(Integer, default=0)
     big_blind_position = Column(Integer, default=0)
 
@@ -27,6 +26,8 @@ class SessionModel(Base):
     last_player_action = Column(Enum(PlayerActionEnum), default=PlayerActionEnum.unknown)
 
     in_progress = Column(Boolean, default=False)
+
+    max_bet = Column(Integer, default=0)
 
     pot = Column(Integer, default=0)
 

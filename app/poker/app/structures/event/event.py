@@ -1,6 +1,7 @@
-from typing import Any, Callable
+from typing import Callable
 
 from schemas import WSEventSchema
+from structures.exceptions import WSUnhandledEndpointError
 from structures.handler import HandlerObject
 from structures.helpers import CallbackType
 from structures.ws import WSConnection
@@ -22,6 +23,9 @@ class EventObserver:
                 if handler.awaitable:
                     return await handler.callback(data=data, ws=ws)
                 return handler.callback(data=data, ws=ws)
+        raise WSUnhandledEndpointError(
+            f"Endpoint with filter={data.payload.to_filter} doesn't exists"
+        )
 
     def __call__(
         self,

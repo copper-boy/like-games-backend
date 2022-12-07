@@ -5,8 +5,11 @@ from .ws.errors import (
     WSAlreadyConnectedError,
     WSCommandError,
     WSConnectionError,
+    WSEventError,
     WSMessageError,
     WSStateError,
+    WSUnhandledEndpointError,
+    WSUnhandledEventError,
 )
 
 __all__ = (
@@ -21,6 +24,9 @@ __all__ = (
     "WSAlreadyConnectedError",
     "WSCommandError",
     "WSConnectionError",
+    "WSEventError",
     "WSMessageError",
     "WSStateError",
+    "WSUnhandledEndpointError",
+    "WSUnhandledEventError",
 )

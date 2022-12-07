@@ -44,4 +44,15 @@ async def view_me(
     user: IntegrationUserSchema = Depends(tools.store.integration_user_accessor.get_user),
     session: AsyncSession = Depends(depends.get_session),
 ) -> PotSchema:
-    return await view_pot(user_id=user.id, session=session)
+    pot = await tools.store.pot_accessor.get_pot_by(
+        session=session,
+        where=(PotModel.user_id == user.id),
+    )
+
+    if not pot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"pot for user {user.id=} not found on server",
+        )
+
+    return pot

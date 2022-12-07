@@ -2,7 +2,7 @@ from fastapi.requests import Request
 from fastapi.websockets import WebSocket
 
 from core.config import get_site_settings
-from schemas.integration import IntegrationUserSchema
+from schemas import IntegrationUserSchema
 from store.base import BaseAccessor
 
 

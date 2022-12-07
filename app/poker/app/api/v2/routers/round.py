@@ -10,7 +10,7 @@ from schemas import RoundSchema
 router = APIRouter()
 
 
-@router.post(
+@router.get(
     path="/view/round/{round_id}",
     response_model=RoundSchema,
     status_code=status.HTTP_200_OK,
