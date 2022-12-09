@@ -1,3 +1,5 @@
+from typing import Optional
+
 from aiohttp import ClientResponseError
 from loguru import logger
 from sqlalchemy import and_
@@ -52,7 +54,7 @@ async def new_player(
 
 
 async def delete_player(
-    manager: WSManager,
+    manager: Optional[WSManager],
     player_id: int,
     preview_balance: int,
 ) -> None:
@@ -71,8 +73,9 @@ async def delete_player(
             session=asyncsession, player_id=player_id
         )
 
-    answer_event = WSEventSchema(
-        event=WSEventEnum.server_side,
-        payload={"to_filter": "delete_player", "data": {"player_id": player_id}},
-    )
-    await manager.broadcast_json(event=answer_event)
+    if manager:
+        answer_event = WSEventSchema(
+            event=WSEventEnum.server_side,
+            payload={"to_filter": "delete_player", "data": {"player_id": player_id}},
+        )
+        await manager.broadcast_json(event=answer_event)

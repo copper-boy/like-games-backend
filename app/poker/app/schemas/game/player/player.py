@@ -13,8 +13,8 @@ class PlayerSchema(BaseModel):
     last_bet: int
     round_bet: int
 
-    is_allin: int
-    is_folded: int
+    is_allin: bool
+    is_folded: bool
 
     user: UserSchema
 

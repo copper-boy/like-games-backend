@@ -24,7 +24,6 @@ class SessionSchema(BaseModel):
 
     pot: int
 
-
     class Config:
         orm_mode = True
 

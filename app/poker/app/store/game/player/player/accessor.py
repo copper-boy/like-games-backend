@@ -78,3 +78,10 @@ class PlayerAccessor(BaseAccessor):
         )
 
         return to_return.scalars().all()
+
+    async def clear_players(self, session: AsyncSession, session_id: int) -> None:
+        await session.execute(
+            update(PlayerModel)
+            .where(PlayerModel.session_id == session_id)
+            .values(last_bet=0, round_bet=0)
+        )

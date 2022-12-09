@@ -1,5 +1,6 @@
+from asyncio import Task
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 from fastapi.websockets import WebSocket
 
@@ -14,7 +15,7 @@ class BaseWSConnection:
 class MetaTimeoutTask(type):
     def __new__(cls, *args: tuple, **kwargs: dict) -> ...:
         to_return = super().__new__(cls, *args, **kwargs)
-        to_return.timeout_task = None
+        to_return.timeout_task: Optional[Task] = None  # noqa
 
         return to_return
 

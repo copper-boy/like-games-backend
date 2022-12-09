@@ -1,13 +1,12 @@
 from core import tools
 from db.session import session as sessionmaker
 from orm import SessionModel
-from ws import WSManager
 
 from .need_to_continue import need_to_continue
 from .need_to_start import need_to_start
 
 
-async def gamedef(manager: WSManager, session_id: int) -> None:
+async def gamedef(manager, session_id: int) -> None:
     async with sessionmaker.begin() as asyncsession:
         session = await tools.store.game_session_accessor.get_session_by(
             session=asyncsession, where=(SessionModel.id == session_id)

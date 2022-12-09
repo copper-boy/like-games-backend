@@ -14,6 +14,8 @@ async def call_handler(data: WSEventSchema, ws: WSConnection) -> None:
             session=session, player_id=ws.player_id, last_player=s.last_player
         )
 
+        last_known_round = s.round.type
+
         helpers.release_or_raise(player=player, current_player=s.current_player)
 
         to_call = await helpers.do_call(
@@ -30,6 +32,8 @@ async def call_handler(data: WSEventSchema, ws: WSConnection) -> None:
             action=PlayerActionEnum.call,
         )
 
+    round_type = await helpers.next_round_call(session_id=s.id, manager=ws.manager)
+
     answer_event = WSEventSchema(
         event="game",
         payload={
@@ -41,4 +45,9 @@ async def call_handler(data: WSEventSchema, ws: WSConnection) -> None:
             },
         },
     )
-    await ws.manager.broadcast_json(event=answer_event)
+    await helpers.with_predicate(
+        first_operand=last_known_round,
+        second_operand=round_type,
+        event=answer_event,
+        manager=ws.manager,
+    )

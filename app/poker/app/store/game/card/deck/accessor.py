@@ -60,7 +60,10 @@ class DeckAccessor(BaseAccessor):
 
         to_access = 0
         for card in deck.cards:
-            if card.to_id != 0 and card.position != CardPositionEnum.deck:
+            if card.to_id == 0 and card.position in {
+                CardPositionEnum.deck,
+                CardPositionEnum.table,
+            }:
                 continue
             if to_access == count:
                 break

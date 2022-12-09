@@ -6,9 +6,14 @@ from structures.exceptions import WSUnhandledEventError
 from structures.ws import WSConnection
 
 
+def _close_callback(ws: WSConnection) -> None:
+    if ws.timeout_task:
+        ws.timeout_task.cancel()
+
+
 class Router:
     def __init__(self) -> None:
-        self.game = LikeEventObserver(event_name="game")
+        self.game = LikeEventObserver(event_name="game", callback=_close_callback)
         self.helper = LikeEventObserver(event_name="helper")
 
         self.observers: dict[str, LikeEventObserver] = {

@@ -5,6 +5,7 @@ from starlette.responses import HTMLResponse
 import handlers  # noqa
 from api import router as api_router
 from core import middlewares, tools
+from misc import sch
 
 
 def create_application() -> FastAPI:
@@ -18,6 +19,7 @@ def create_application() -> FastAPI:
     @application.on_event(event_type="startup")
     async def startup() -> None:
         await tools.store.connect()
+        sch.start()
 
     @application.on_event(event_type="shutdown")
     async def shutdown() -> None:
@@ -80,10 +82,27 @@ async def home() -> HTMLResponse:
                 "to_filter": "allin",
             }
         }
+        const msg3 = {
+            event: "game",
+            payload: {
+                "to_filter":  "mecards",
+            }
+        }
+        const msg4 = {
+            event: "game",
+            payload: {
+                "to_filter": "tablecards",
+            }
+        }
+        
         if (document.getElementById("text").value == 1) {
             ws.send(JSON.stringify(msg1));   
-        } else {
+        } else if (document.getElementById("text").value == 2) {
             ws.send(JSON.stringify(msg2));
+        } else if (document.getElementById("text").value == 3) {
+            ws.send(JSON.stringify(msg3));
+        } else if (document.getElementById("text").value == 4) {
+            ws.send(JSON.stringify(msg4));
         }
         event.preventDefault();
     }

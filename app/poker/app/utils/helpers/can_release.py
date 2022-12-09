@@ -1,11 +1,14 @@
-from orm import PlayerModel, SessionModel
+from orm import PlayerModel
 from structures.enums import PlayerActionEnum
 from structures.exceptions import WSCommandError
 
 
 def release_or_raise(player: PlayerModel, current_player: int) -> None:
     if (player.is_allin or player.is_folded) or current_player != player.id:
-        raise WSCommandError
+        if current_player != player.id:
+            raise WSCommandError("You not the current player")
+        else:
+            raise WSCommandError(f"You already in {'fold' if player.is_folded else 'allin'}")
 
 
 def release_bet_or_raise(
@@ -14,7 +17,7 @@ def release_bet_or_raise(
     release_or_raise(player=player, current_player=current_player)
 
     if bet < big_blind:
-        raise WSCommandError
+        raise WSCommandError(f"Bet {bet} less than {big_blind=}")
 
 
 def release_check_or_raise(
@@ -25,12 +28,13 @@ def release_check_or_raise(
     last_player: PlayerModel,
 ) -> None:
     release_or_raise(player=player, current_player=current_player)
+
     if (
         player.last_bet != last_player.last_bet
         or (player.id != big_blind_position and player.last_bet != last_player.last_bet)
         or (last_action != PlayerActionEnum.check)
     ):
-        raise WSCommandError
+        raise WSCommandError("Unable to complete check")
 
 
 def release_up_or_raise(
@@ -43,5 +47,5 @@ def release_up_or_raise(
         bet=bet,
     )
 
-    if big_blind // bet < 2:
-        raise WSCommandError
+    if bet == big_blind:
+        raise WSCommandError("Raise must be > big blind bet")

@@ -1,13 +1,18 @@
 from asyncio import Task
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi.websockets import WebSocket
 from loguru import logger
 
 from core import tools
+from db.session import session
+from misc import sch
+from orm import PlayerModel
 from schemas import WSEventSchema
 from structures.exceptions import WSAlreadyConnectedError
 from structures.ws import WSConnection
+from tasks import gamedef_thread
+from utils import helpers
 
 from .base import BaseWSManager, BaseWSMessageManager
 
@@ -15,8 +20,15 @@ from .base import BaseWSManager, BaseWSMessageManager
 class WSManager(BaseWSManager, BaseWSMessageManager):
     def __init__(self) -> None:
         super(WSManager, self).__init__()
-
         self.start_session_task: Optional[Task] = None
+
+        self.gamedef_schedule_task: Optional[Any] = None
+
+        self.last_known_connected: int = 0
+
+    @property
+    def connected(self) -> int:
+        return len(self._connections)
 
     async def accept(self, session_id: int, websocket: WebSocket, user_id: int) -> WSConnection:
         await websocket.accept()
@@ -37,8 +49,8 @@ class WSManager(BaseWSManager, BaseWSMessageManager):
         ws_connection = self._connections.pop(user_id)
         try:
             await ws_connection.websocket.close()
-        except RuntimeError as e:
-            logger.exception(e)
+        except RuntimeError:
+            ...
 
     def connection(self, user_id: int) -> WSConnection:
         connection = self._connections.get(user_id)
@@ -70,5 +82,30 @@ class WSManagerList:
         exists = self.managers.get(session_id, None)
         if exists:
             return exists
-        self.managers[session_id] = WSManager()
+        manager = WSManager()
+        self.managers[session_id] = manager
+
+        manager.gamedef_schedule_task = sch.add_job(
+            func=gamedef_thread, kwargs={"session_id": session_id}, trigger="interval", seconds=0.5
+        )
+
         return self.managers[session_id]
+
+    async def remove(self, session_id: int) -> None:
+        exists = self.managers.get(session_id, None)
+        if not exists:
+            return None
+
+        if not exists.connected:
+            exists.gamedef_schedule_task.remove()
+            self.managers.pop(session_id)
+
+        async with session.begin() as asyncsession:
+            players = await tools.store.game_player_accessor.get_players_by(
+                session=asyncsession, where=(PlayerModel.session_id == session_id)
+            )
+
+        for player in players:
+            await helpers.delete_player(
+                manager=None, player_id=player.id, preview_balance=player.game_chips
+            )

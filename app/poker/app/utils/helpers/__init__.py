@@ -15,6 +15,8 @@ from .game import (
     do_up,
     give_player_cards,
     give_table_cards,
+    is_all_allin,
+    next_round_call,
     release_action,
     set_blinds,
     shuffle_deck,
@@ -22,6 +24,7 @@ from .game import (
 )
 from .player import get_player, get_player_by_id, get_player_with_last_player
 from .session import get_session_with_raise, set_players_in_session
+from .with_predicate import with_predicate
 from .ws_player import delete_player, new_player
 
 __all__ = (
@@ -43,12 +46,15 @@ __all__ = (
     "give_player_cards",
     "give_table_cards",
     "shuffle_deck",
+    "is_all_allin",
+    "next_round_call",
     "wait_for_action",
     "get_player",
     "get_player_by_id",
     "get_player_with_last_player",
     "get_session_with_raise",
     "set_players_in_session",
+    "with_predicate",
     "delete_player",
     "new_player",
 )

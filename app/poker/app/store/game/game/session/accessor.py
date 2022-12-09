@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import and_, desc, func, select, update
+from sqlalchemy import desc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -89,10 +89,7 @@ class SessionAccessor(BaseAccessor):
                 & (GameModel.chips_to_join == chips_to_join)
             )
             .where(
-                and_(
-                    SessionModel.players_connected < GameModel.max_players,
-                    SessionModel.in_progress == False,
-                )
+                SessionModel.in_progress == False,
             )
             .join(GameModel)
             .order_by(desc(SessionModel.players_connected))
@@ -117,10 +114,7 @@ class SessionAccessor(BaseAccessor):
                 & (GameModel.chips_to_join == chips_to_join)
             )
             .where(
-                and_(
-                    SessionModel.players_connected < GameModel.max_players,
-                    SessionModel.in_progress == False,
-                )
+                SessionModel.in_progress == False,
             )
             .join(GameModel)
             .select_from(SessionModel)

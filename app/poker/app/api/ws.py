@@ -19,14 +19,13 @@ from structures.exceptions import (
     WSUnhandledEventError,
 )
 from structures.ws import WSConnection
-from utils import gamedef, helpers
+from utils import helpers
+from ws import WSManager
 
 router = APIRouter()
 
 
-async def _ws_endpoint(ws_connection: WSConnection) -> None:
-    await gamedef.gamedef(manager=ws_connection.manager, session_id=ws_connection.session_id)
-
+async def __ws_endpoint(ws_connection: WSConnection) -> None:
     while True:
         data = await ws_connection.read()
 
@@ -96,28 +95,17 @@ async def _ws_endpoint(ws_connection: WSConnection) -> None:
                 },
             )
             await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
-        else:
-            match data.event:
-                case WSEventEnum.game:
-                    await gamedef.gamedef(
-                        manager=ws_connection.manager, session_id=ws_connection.session_id
-                    )
 
 
-@router.websocket(
-    path="/ws/{session_id}",
-)
-async def ws_endpoint(
+async def _ws_endpoint(
     websocket: WebSocket,
-    session_id: int = Path(...),
-    iuser: IntegrationUserSchema = Depends(
-        tools.store.integration_user_accessor.get_user_websocket
-    ),
+    session_id: int,
+    iuser: IntegrationUserSchema,
+    manager: WSManager,
 ) -> None:
     pot = await tools.store.integration_pot_accessor.get_pot(user_id=iuser.id)
 
     try:
-        manager = tools.ws_managers.get(session_id=session_id)
         ws_connection = await manager.accept(
             websocket=websocket, user_id=iuser.id, session_id=session_id
         )
@@ -161,12 +149,10 @@ async def ws_endpoint(
     ws_connection.player_id = player.id
 
     try:
-        await _ws_endpoint(ws_connection=ws_connection)
-    except WebSocketDisconnect as e:
-        logger.exception(e)
+        await __ws_endpoint(ws_connection=ws_connection)
+    except WebSocketDisconnect:
         await manager.remove(user_id=ws_connection.user_id)
-    except ConnectionClosedError as e:
-        logger.exception(e)
+    except ConnectionClosedError:
         await manager.remove(user_id=ws_connection.user_id)
     except Exception:
         await manager.remove(user_id=ws_connection.user_id)
@@ -176,3 +162,23 @@ async def ws_endpoint(
         player_id=ws_connection.player_id,
         preview_balance=new_balance,
     )
+
+
+@router.websocket(
+    path="/ws/{session_id}",
+)
+async def ws_endpoint(
+    websocket: WebSocket,
+    session_id: int = Path(...),
+    iuser: IntegrationUserSchema = Depends(
+        tools.store.integration_user_accessor.get_user_websocket
+    ),
+) -> None:
+    manager = tools.ws_managers.get(session_id=session_id)
+
+    try:
+        await _ws_endpoint(
+            websocket=websocket, session_id=session_id, iuser=iuser, manager=manager
+        )
+    finally:
+        await tools.ws_managers.remove(session_id=session_id)

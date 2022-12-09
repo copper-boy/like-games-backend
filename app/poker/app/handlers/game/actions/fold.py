@@ -12,6 +12,8 @@ async def fold_handler(data: WSEventSchema, ws: WSConnection) -> None:
         s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
         player = await helpers.get_player_by_id(session=session, player_id=ws.player_id)
 
+        last_known_round = s.round.type
+
         helpers.release_or_raise(player=player, current_player=s.current_player)
 
         to_fold = await helpers.do_fold(session=session, player=player)
@@ -26,6 +28,8 @@ async def fold_handler(data: WSEventSchema, ws: WSConnection) -> None:
             action=PlayerActionEnum.fold,
         )
 
+    round_type = await helpers.next_round_call(session_id=s.id, manager=ws.manager)
+
     answer_event = WSEventSchema(
         event="game",
         payload={
@@ -37,4 +41,9 @@ async def fold_handler(data: WSEventSchema, ws: WSConnection) -> None:
             },
         },
     )
-    await ws.manager.broadcast_json(event=answer_event)
+    await helpers.with_predicate(
+        first_operand=last_known_round,
+        second_operand=round_type,
+        event=answer_event,
+        manager=ws.manager,
+    )

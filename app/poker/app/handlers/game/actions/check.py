@@ -13,6 +13,9 @@ async def check_handler(data: WSEventSchema, ws: WSConnection) -> None:
         player, last_player = helpers.get_player_with_last_player(
             session=session, player_id=ws.player_id, last_player=s.last_player
         )
+
+        last_known_round = s.round.type
+
         helpers.release_check_or_raise(
             player=player,
             current_player=s.current_player,
@@ -33,6 +36,8 @@ async def check_handler(data: WSEventSchema, ws: WSConnection) -> None:
             action=PlayerActionEnum.check,
         )
 
+    round_type = await helpers.next_round_call(session_id=s.id, manager=ws.manager)
+
     answer_event = WSEventSchema(
         event="game",
         payload={
@@ -44,4 +49,9 @@ async def check_handler(data: WSEventSchema, ws: WSConnection) -> None:
             },
         },
     )
-    await ws.manager.broadcast_json(event=answer_event)
+    await helpers.with_predicate(
+        first_operand=last_known_round,
+        second_operand=round_type,
+        event=answer_event,
+        manager=ws.manager,
+    )

@@ -4,10 +4,9 @@ from core import tools
 from db.session import session as sessionmaker
 from schemas import WSEventSchema
 from utils import helpers
-from ws import WSManager
 
 
-async def start_session_task(manager: WSManager, session_id: int) -> None:
+async def start_session_task(manager, session_id: int) -> None:
     await manager.broadcast_json(
         event=WSEventSchema(
             event="game",

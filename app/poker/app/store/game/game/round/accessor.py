@@ -50,12 +50,8 @@ class RoundAccessor(BaseAccessor):
 
     async def call_next_round(self, session: AsyncSession, round_id: int) -> enums.RoundTypeEnum:
         round = await self.get_round_by(session=session, where=(RoundModel.id == round_id))
-        if not round.round_ended:
-            raise exceptions.DatabaseAccessorError
 
         to_update = self.to_select.get(round.type, None)
-        await self.update_round(
-            session=session, round_id=round.id, values={"type": to_update, "round_ended": False}
-        )
+        await self.update_round(session=session, round_id=round.id, values={"type": to_update})
 
         return to_update

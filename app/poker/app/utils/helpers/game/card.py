@@ -27,10 +27,10 @@ async def give_player_cards(
 
 
 _to_add = {
-    RoundTypeEnum.preflop: 3,
-    RoundTypeEnum.flop: 1,
+    RoundTypeEnum.preflop: 0,
+    RoundTypeEnum.flop: 3,
     RoundTypeEnum.turn: 1,
-    RoundTypeEnum.river: 0,
+    RoundTypeEnum.river: 1,
 }
 
 

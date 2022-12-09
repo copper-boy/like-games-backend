@@ -8,10 +8,5 @@ class RoundSchema(BaseModel):
 
     type: RoundTypeEnum
 
-    round_ended: bool
-    rounds_played: int
-
-    all_played: bool
-
     class Config:
         orm_mode = True

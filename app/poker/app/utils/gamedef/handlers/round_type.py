@@ -5,14 +5,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from utils import helpers
 
 
-async def any_flop_to_river(session: AsyncSession, manager, session_id: int) -> None:
-    s = await helpers.get_session_with_raise(session=session, session_id=session_id)
-
-    if not (s.last_player == s.big_blind_position and s.current_player == s.small_blind_position):
-        player = await helpers.get_player_by_id(session=session, player_id=s.current_player)
+async def round_type(
+    session: AsyncSession,
+    last_player: int,
+    current_player: int,
+    from_position: int,
+    to_position: int,
+    max_bet: int,
+    manager,
+) -> None:
+    if not (last_player == from_position and current_player == to_position):
+        player = await helpers.get_player_by_id(session=session, player_id=current_player)
         connection = manager.connection(user_id=player.user_id)
 
-        if player.last_bet == s.max_bet or player.game_chips == 0:
+        if player.last_bet == max_bet or player.is_allin:
             if connection.timeout_task:
                 connection.timeout_task.cancel()
         else:
