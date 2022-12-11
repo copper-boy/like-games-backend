@@ -7,6 +7,7 @@ from sqlalchemy.orm import joinedload
 from orm import GameModel, PlayerModel, SessionModel
 from store.base import BaseAccessor
 from structures.exceptions import DatabaseAccessorError
+from utils import helpers
 
 
 class SessionAccessor(BaseAccessor):
@@ -48,7 +49,7 @@ class SessionAccessor(BaseAccessor):
         return to_return.scalar()
 
     async def set_next_player(self, session: AsyncSession, session_id: int) -> None:
-        s = await self.get_session_by(session=session, where=(SessionModel.id == session_id))
+        s = await helpers.get_session_with_raise(session=session, session_id=session_id)
         players = await self.store.game_player_accessor.get_players_by(
             session=session, where=(PlayerModel.session_id == s.id)
         )
@@ -63,13 +64,6 @@ class SessionAccessor(BaseAccessor):
                     break
         await self.update_session(
             session=session, session_id=s.id, values={"current_player": to_set}  # noqa
-        )
-
-    async def players(self, session: AsyncSession, s: SessionModel, new: int) -> None:
-        await self.update_session(
-            session=session,
-            session_id=s.id,
-            values={"players_connected": s.players_connected + new},
         )
 
     async def filter_sessions(  # noqa

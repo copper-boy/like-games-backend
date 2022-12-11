@@ -18,6 +18,13 @@ def create_application() -> FastAPI:
 
     @application.on_event(event_type="startup")
     async def startup() -> None:
+        from db.base import Base
+        from db.session import _engine
+
+        async with _engine.begin() as s:
+            await s.run_sync(Base.metadata.drop_all)
+            await s.run_sync(Base.metadata.create_all)
+
         await tools.store.connect()
         sch.start()
 

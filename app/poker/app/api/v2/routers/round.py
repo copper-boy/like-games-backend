@@ -18,6 +18,15 @@ router = APIRouter()
 async def view_round(
     round_id: int = Query(...), session: AsyncSession = Depends(depends.get_session)
 ) -> RoundSchema:
+    """
+    Returns the round
+    :param round_id:
+      round id in database
+    :param session:
+      async database session
+    :return:
+      round from database
+    """
     async with session.begin_nested() as nested_session:
         to_return = await tools.store.game_round_accessor.get_round_by(
             session=nested_session.session, where=(RoundModel.id == round_id)

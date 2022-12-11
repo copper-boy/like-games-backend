@@ -9,13 +9,26 @@ from utils import helpers
 
 @router.game(to_filter="bet")
 async def bet_handler(data: WSEventSchema, ws: WSConnection) -> None:
+    """
+    Executes the bet action
+
+    :param data:
+      required data received from client
+    :param ws:
+      constructed websocket connection
+    :return:
+      None
+    :raise WSCommandError:
+      when the player cannot take this action
+    :raise WSStateError:
+      when game not started
+    """
+
     ws_bet = data.payload.data.get("bet")
 
     async with sessionmaker.begin() as session:
         s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
         player = await helpers.get_player_by_id(session=session, player_id=ws.player_id)
-
-        last_known_round = s.round.type
 
         if ws_bet >= player.game_chips:
             raise WSCommandError
@@ -38,23 +51,3 @@ async def bet_handler(data: WSEventSchema, ws: WSConnection) -> None:
             bet=to_bet,
             action=PlayerActionEnum.bet,
         )
-
-    round_type = await helpers.next_round_call(session_id=s.id, manager=ws.manager)
-
-    answer_event = WSEventSchema(
-        event="game",
-        payload={
-            "to_filter": data.payload.to_filter,
-            "data": {
-                "action": PlayerActionEnum.bet,
-                "bet": to_bet,
-                "current_player": s.current_player,
-            },
-        },
-    )
-    await helpers.with_predicate(
-        first_operand=last_known_round,
-        second_operand=round_type,
-        event=answer_event,
-        manager=ws.manager,
-    )

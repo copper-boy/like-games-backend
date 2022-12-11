@@ -18,6 +18,16 @@ router = APIRouter()
 async def view_game(
     game_id: int = Query(...), session: AsyncSession = Depends(depends.get_session)
 ) -> GameSchema:
+    """
+    Returns the game
+
+    :param game_id:
+      game id in database
+    :param session:
+      async database session
+    :return:
+      game from database
+    """
     async with session.begin_nested() as nested_session:
         to_return = await tools.store.game_accessor.get_game_by(
             session=nested_session.session, where=(GameModel.id == game_id)

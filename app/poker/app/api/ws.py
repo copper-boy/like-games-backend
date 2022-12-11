@@ -26,6 +26,15 @@ router = APIRouter()
 
 
 async def __ws_endpoint(ws_connection: WSConnection) -> None:
+    """
+    Websocket endpoint third level
+
+    :param ws_connection:
+      constructed websocket connection
+    :return:
+      None
+    """
+
     while True:
         data = await ws_connection.read()
 
@@ -103,6 +112,21 @@ async def _ws_endpoint(
     iuser: IntegrationUserSchema,
     manager: WSManager,
 ) -> None:
+    """
+    Websocket endpoint second level.
+
+    :param websocket:
+      websocket connection
+    :param session_id:
+      session id need to connect to the game
+    :param iuser:
+      user object from user service
+    :param manager:
+      manager for session
+    :return:
+      None
+    """
+
     pot = await tools.store.integration_pot_accessor.get_pot(user_id=iuser.id)
 
     try:
@@ -174,6 +198,19 @@ async def ws_endpoint(
         tools.store.integration_user_accessor.get_user_websocket
     ),
 ) -> None:
+    """
+    Websocket endpoint first level.
+
+    :param websocket:
+      websocket connection
+    :param session_id:
+      session id need to connect to the game
+    :param iuser:
+      user object from user service
+    :return:
+      None
+    """
+
     manager = tools.ws_managers.get(session_id=session_id)
 
     try:

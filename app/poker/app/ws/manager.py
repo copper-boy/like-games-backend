@@ -2,7 +2,6 @@ from asyncio import Task
 from typing import Any, Optional
 
 from fastapi.websockets import WebSocket
-from loguru import logger
 
 from core import tools
 from db.session import session

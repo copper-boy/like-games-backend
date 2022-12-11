@@ -9,7 +9,14 @@ from .game import (
     SessionSchema,
     UserSchema,
 )
-from .integration import IntegrationPotSchema, IntegrationPotUpdateSchema, IntegrationUserSchema
+from .integration import (
+    IntegrationLikeEvaluatorHandResponseSchema,
+    IntegrationLikeEvaluatorRequestSchema,
+    IntegrationLikeEvaluatorResponseSchema,
+    IntegrationPotSchema,
+    IntegrationPotUpdateSchema,
+    IntegrationUserSchema,
+)
 from .ws import WSEventSchema
 
 __all__ = (
@@ -22,6 +29,9 @@ __all__ = (
     "LogicDeckSchema",
     "PlayerSchema",
     "UserSchema",
+    "IntegrationLikeEvaluatorHandResponseSchema",
+    "IntegrationLikeEvaluatorRequestSchema",
+    "IntegrationLikeEvaluatorResponseSchema",
     "IntegrationPotSchema",
     "IntegrationPotUpdateSchema",
     "IntegrationUserSchema",

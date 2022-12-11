@@ -13,6 +13,12 @@ class CallableMixin:
 class AsyncCallableMixin(CallableMixin):
     @property
     def awaitable(self) -> bool:
+        """
+        Checks if the callback property is awaitable
+
+        :return:
+          object is awaitable
+        """
         awaitable = inspect.isawaitable(self.callback) or inspect.iscoroutinefunction(
             self.callback
         )

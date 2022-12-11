@@ -7,8 +7,18 @@ from structures.ws import WSConnection
 
 
 def _close_callback(ws: WSConnection) -> None:
+    """
+    Closes task for websocket connection
+
+    :param ws:
+      constructed websocket connection
+    :return:
+      None
+    """
+
     if ws.timeout_task:
         ws.timeout_task.cancel()
+        ws.timeout_task = None
 
 
 class Router:
@@ -22,6 +32,19 @@ class Router:
         }
 
     async def event(self, data: WSEventSchema, ws: WSConnection) -> None:
+        """
+        Handle event from connection
+
+        :param data:
+          received data from websocket connection
+        :param ws:
+          constructed websocket connection
+        :return:
+          None
+        :raise WSUnhandledEventError:
+          on unhandled event
+        """
+
         try:
             observer = self.observers[data.event]
         except KeyError as e:

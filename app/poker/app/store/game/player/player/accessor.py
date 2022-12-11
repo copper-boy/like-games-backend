@@ -74,7 +74,7 @@ class PlayerAccessor(BaseAccessor):
         to_return = await session.execute(
             select(PlayerModel)
             .where(PlayerModel.session_id == session_id)
-            .order_by(asc(PlayerModel.in_game_order))
+            .order_by(asc(PlayerModel.id))
         )
 
         return to_return.scalars().all()

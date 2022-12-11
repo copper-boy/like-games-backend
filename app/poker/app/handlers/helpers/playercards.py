@@ -11,8 +11,23 @@ from structures.ws import WSConnection
 from utils import helpers
 
 
-@router.game(to_filter="playercards")
+@router.helper(to_filter="playercards")
 async def playercards_handler(data: WSEventSchema, ws: WSConnection) -> None:
+    """
+    Gets the player cards by player id
+
+    :param data:
+      required data received from client
+    :param ws:
+      constructed websocket connection
+    :return:
+      None
+    :raise WSCommandError:
+      when round type not equals `RoundTypeEnum.showdown`
+    :raise WSStateError:
+      when game not started
+    """
+
     player_id = data.payload.data.get("player_id")
 
     async with sessionmaker.begin() as session:
@@ -26,8 +41,6 @@ async def playercards_handler(data: WSEventSchema, ws: WSConnection) -> None:
                     CardModel.to_id == player_id,
                 ),
             )
-            if not cards:
-                raise WSCommandError
         else:
             raise WSCommandError
 

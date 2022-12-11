@@ -19,6 +19,17 @@ router = APIRouter()
 async def create_round(
     api_token: str = Query(...), session: AsyncSession = Depends(depends.get_session)
 ) -> RoundSchema:
+    """
+    Creates the round in database
+
+    :param api_token:
+      admin access token
+    :param session:
+      async database session
+    :return:
+      created round
+    """
+
     async with session.begin_nested() as nested_session:
         to_return = await tools.store.game_round_accessor.create_round(
             session=nested_session.session

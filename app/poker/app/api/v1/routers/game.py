@@ -25,6 +25,27 @@ async def create_game(
     big_blind: int = Body(default=100),
     session: AsyncSession = Depends(depends.get_session),
 ) -> GameSchema:
+    """
+    Creates the game in database
+
+    :param api_token:
+      admin access token
+    :param min_players:
+      min numbers of players in game
+    :param max_players:
+      max numbers of players in game
+    :param chips_to_join:
+      min chips to join in the game
+    :param small_blind:
+      small blind bet
+    :param big_blind:
+      big blind bet
+    :param session:
+      async database session
+    :return:
+      created game
+    """
+
     async with session.begin_nested() as nested_session:
         to_return = await tools.store.game_accessor.create_game(
             min_players=min_players,

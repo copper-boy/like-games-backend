@@ -23,6 +23,7 @@ def get_database_settings() -> DatabaseSettings:
 
 class SiteSettings(BaseSettings):
     AUTH_SITE_BASE_URL: str
+    LIKE_SITE_BASE_URL: str
     POT_SITE_BASE_URL: str
 
 

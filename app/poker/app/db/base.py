@@ -10,4 +10,11 @@ class Base:
     @classmethod
     @declared_attr
     def __tablename__(cls) -> str:
+        """
+        Adds to model table name attribute
+
+        :return:
+          generated table name attribute
+        """
+
         return cls.__name__.lower()

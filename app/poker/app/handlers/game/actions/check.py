@@ -8,13 +8,26 @@ from utils import helpers
 
 @router.game(to_filter="check")
 async def check_handler(data: WSEventSchema, ws: WSConnection) -> None:
+    """
+    Executes the check action
+
+    :param data:
+      optional data received from client
+    :param ws:
+      constructed websocket connection
+    :return:
+      None
+    :raise WSCommandError:
+      when the player cannot take this action
+    :raise WSStateError:
+      when game not started
+    """
+
     async with sessionmaker.begin() as session:
         s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
         player, last_player = helpers.get_player_with_last_player(
             session=session, player_id=ws.player_id, last_player=s.last_player
         )
-
-        last_known_round = s.round.type
 
         helpers.release_check_or_raise(
             player=player,
@@ -35,23 +48,3 @@ async def check_handler(data: WSEventSchema, ws: WSConnection) -> None:
             bet=to_check,
             action=PlayerActionEnum.check,
         )
-
-    round_type = await helpers.next_round_call(session_id=s.id, manager=ws.manager)
-
-    answer_event = WSEventSchema(
-        event="game",
-        payload={
-            "to_filter": data.payload.to_filter,
-            "data": {
-                "action": PlayerActionEnum.check,
-                "bet": 0,
-                "current_player": s.current_player,
-            },
-        },
-    )
-    await helpers.with_predicate(
-        first_operand=last_known_round,
-        second_operand=round_type,
-        event=answer_event,
-        manager=ws.manager,
-    )

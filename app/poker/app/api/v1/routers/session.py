@@ -23,6 +23,23 @@ async def create_session(
     round_id: int = Query(...),
     session: AsyncSession = Depends(depends.get_session),
 ) -> SessionSchema:
+    """
+    Creates session in database
+
+    :param api_token:
+      admin access token
+    :param deck_id:
+      deck id in database
+    :param game_id:
+      game id in database
+    :param round_id:
+      round id in database
+    :param session:
+      async database session
+    :return:
+      created session
+    """
+
     async with session.begin_nested() as nested_session:
         to_return = await tools.store.game_session_accessor.create_session(
             session=nested_session.session,

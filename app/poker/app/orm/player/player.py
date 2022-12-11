@@ -9,8 +9,6 @@ class PlayerModel(Base):
 
     game_chips = Column(Integer, default=10000)
 
-    in_game_order = Column(Integer, default=0)
-
     last_bet = Column(Integer, default=0)
     round_bet = Column(Integer, default=0)
 

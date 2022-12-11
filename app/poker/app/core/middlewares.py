@@ -8,6 +8,17 @@ from db.session import session
 
 
 async def session_http_middleware(request: Request, call_next: Callable) -> Any:
+    """
+    Adds async database session for request
+
+    :param request:
+      request for endpoint
+    :param call_next:
+      endpoint
+    :return:
+      response from endpoint
+    """
+
     async with session.begin() as s:
         request.state.session = s
 
@@ -27,9 +38,27 @@ def cors_middleware(app: FastAPI) -> None:
 
 
 def register_http_middlewares(app: FastAPI) -> None:
+    """
+    Sets all middlewares for HTTP
+
+    :param app:
+      web app instance
+    :return:
+      None
+    """
+
     app.middleware("http")(session_http_middleware)
     cors_middleware(app=app)
 
 
 def register_middlewares(app: FastAPI) -> None:
+    """
+    Sets all middlewares for HTTP and WebSocket
+
+    :param app:
+      web app instance
+    :return:
+      None
+    """
+
     register_http_middlewares(app=app)

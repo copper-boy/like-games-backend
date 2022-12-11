@@ -19,6 +19,7 @@ async def start_session_task(manager, session_id: int) -> None:
             },
         )
     )
+
     await sleep(15)
 
     async with sessionmaker.begin() as session:

@@ -22,9 +22,13 @@ from .game import (
     shuffle_deck,
     wait_for_action,
 )
-from .player import get_player, get_player_by_id, get_player_with_last_player
+from .player import (
+    delete_players_with_zero_balance,
+    get_player,
+    get_player_by_id,
+    get_player_with_last_player,
+)
 from .session import get_session_with_raise, set_players_in_session
-from .with_predicate import with_predicate
 from .ws_player import delete_player, new_player
 
 __all__ = (
@@ -49,12 +53,12 @@ __all__ = (
     "is_all_allin",
     "next_round_call",
     "wait_for_action",
+    "delete_players_with_zero_balance",
     "get_player",
     "get_player_by_id",
     "get_player_with_last_player",
     "get_session_with_raise",
     "set_players_in_session",
-    "with_predicate",
     "delete_player",
     "new_player",
 )

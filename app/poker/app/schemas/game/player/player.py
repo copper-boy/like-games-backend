@@ -8,8 +8,6 @@ class PlayerSchema(BaseModel):
 
     game_chips: int
 
-    in_game_order: int
-
     last_bet: int
     round_bet: int
 
