@@ -69,6 +69,16 @@ services:
       - 8080
     depends_on:
       - user_db
+  like_service:
+    image: like-games-like:latest
+    build: ./app/like/
+    volumes:
+      - ./app/like/:/app/
+    env_file:
+      - .c++.env
+      - .docker.env
+    expose:
+      - 8080
 
 volumes:
   certbot-etc:
