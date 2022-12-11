@@ -1,12 +1,8 @@
 from fastapi import FastAPI
-from sqladmin import Admin
 from starlette import status
 
 from api import router as api_router
-from core import config, handlers, middlewares, tools
-from db.session import _engine
-from utils.admin import PotModelView
-from utils.backend import Backend
+from core import handlers, middlewares, tools
 
 
 def create_application() -> FastAPI:
@@ -16,22 +12,6 @@ def create_application() -> FastAPI:
         redoc_url="/api.pot/redoc",
     )
     application.include_router(api_router, prefix="/api.pot")
-
-    def setup_admin() -> Admin:
-        authentication_backend = Backend(
-            secret_key=config.get_sqladmin_settings().SQLADMIN_SECRET_KEY
-        )
-        to_return = Admin(
-            app=application,
-            engine=_engine,
-            base_url="/api.pot/admin",
-            authentication_backend=authentication_backend,
-        )
-        to_return.add_view(PotModelView)
-
-        return to_return
-
-    application.admin = setup_admin()
 
     @application.on_event(event_type="startup")
     async def startup() -> None:
