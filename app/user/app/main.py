@@ -1,12 +1,9 @@
 from fastapi import FastAPI
 from fastapi_jwt_auth import AuthJWT
-from sqladmin import Admin
 from starlette import status
 
 from api import router as api_router
-from core import config, handlers, middlewares, settings, tools
-from db.session import _engine
-from utils import admin, backend
+from core import handlers, middlewares, settings, tools
 
 
 def create_application() -> FastAPI:
@@ -16,22 +13,6 @@ def create_application() -> FastAPI:
         redoc_url="/api.user/redoc",
     )
     application.include_router(api_router, prefix="/api.user")
-
-    def setup_admin() -> Admin:
-        authentication_backend = backend.Backend(
-            secret_key=config.get_sqladmin_settings().SQLADMIN_SECRET_KEY
-        )
-        to_return = Admin(
-            app=application,
-            engine=_engine,
-            base_url="/api.user/admin",
-            authentication_backend=authentication_backend,
-        )
-        to_return.add_view(admin.UserModelView)
-
-        return admin
-
-    application.admin = setup_admin()
 
     @AuthJWT.load_config
     def get_config() -> settings.Settings:

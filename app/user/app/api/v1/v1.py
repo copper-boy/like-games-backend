@@ -5,17 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from core import depends, tools
-from orm.user import UserModel
+from orm import UserModel
 from schemas.user import UserRegistrationSchema, UserSchema
 from utils import auth, helpers
 
 from .routers.cookie import router as cookie_router
-from .routers.oauth2 import router as oauth2_router
 from .routers.telegram import router as telegram_router
 
 router = APIRouter()
 router.include_router(cookie_router)
-router.include_router(oauth2_router)
 router.include_router(telegram_router)
 
 

@@ -3,7 +3,7 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.tools import store
-from orm.user import UserModel
+from orm import UserModel
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
