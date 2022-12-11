@@ -41,70 +41,13 @@ struct hand_schema {
   };
 };
 
-struct evaluator_response_schema_detail {
-  std::vector<hand_schema> winners;
-
-  struct glaze {
-    using T = evaluator_response_schema_detail;
-
-    static constexpr auto value = glz::object("winners", &T::winners);
-  };
-};
-
 struct evaluator_response_schema {
-  bool ok = true;
-  evaluator_response_schema_detail detail;
+  std::vector<hand_schema> winners;
 
   struct glaze {
     using T = evaluator_response_schema;
 
-    static constexpr auto value =
-        glz::object("ok", &T::ok, "detail", &T::detail);
-  };
-};
-
-struct equities_request_schema {
-  std::vector<std::string> hands;
-  std::vector<std::string> board = {};
-
-  struct glaze {
-    using T = equities_request_schema;
-
-    static constexpr auto value =
-        glz::object("hands", &T::hands, "board", &T::board);
-  };
-};
-
-struct equities_result_schema {
-  uint64_t id;
-  std::string wins;
-
-  struct glaze {
-    using T = equities_result_schema;
-
-    static constexpr auto value = glz::object("id", &T::id, "wins", &T::wins);
-  };
-};
-
-struct equities_response_schema_detail {
-  std::vector<equities_result_schema> winners;
-
-  struct glaze {
-    using T = equities_response_schema_detail;
-
     static constexpr auto value = glz::object("winners", &T::winners);
-  };
-};
-
-struct equities_response_schema {
-  bool ok = true;
-  equities_response_schema_detail detail;
-
-  struct glaze {
-    using T = equities_response_schema;
-
-    static constexpr auto value =
-        glz::object("ok", &T::ok, "detail", &T::detail);
   };
 };
 } // namespace data_structures

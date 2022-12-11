@@ -42,38 +42,6 @@ auto side_pot_winners(const poker::game::holdem::gamecards &cards,
 
   return winners;
 }
-
-auto wins_in_percentages(
-    const poker::evaluator::holdem::equity_calculation_result_t &__results)
-    -> std::vector<std::pair<uint64_t, std::string>> {
-  std::vector<std::pair<uint64_t, std::string>> wins;
-  for (size_t index = 0; auto const &result : __results.m_equities) {
-    wins.push_back(std::make_pair(
-        index++,
-        (std::stringstream{} << std::fixed << std::setprecision(2) << result)
-            .str()));
-  }
-  return wins;
-}
-} // namespace holdem
-
-struct unique_t {
-public:
-  unique_t(size_t from) : _current{from} {}
-
-  size_t operator()() { return _current++; }
-
-private:
-  size_t _current = 0;
-};
-
-auto generator(size_t size) -> std::vector<size_t> {
-  std::vector<size_t> generated(size);
-
-  std::generate(generated.begin(), generated.end(), unique_t{0});
-
-  return generated;
-}
 } // namespace utils
 } // namespace like
 
