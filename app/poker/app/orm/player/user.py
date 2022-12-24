@@ -9,4 +9,4 @@ class UserModel(Base):
 
     user_id = Column(Integer, unique=True, nullable=False)
 
-    player = relationship("PlayerModel", back_populates="user", uselist=False)
+    player = relationship("PlayerModel", back_populates="user")

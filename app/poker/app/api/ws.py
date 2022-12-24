@@ -7,6 +7,7 @@ from core import tools
 from handlers import router as handlers_router
 from likeevents import LikeRootRouter
 from likeevents.liketypes import LikeTriggerResponseNamedTuple
+from orm import PlayerModel
 from schemas import EventSchema, IntegrationPotUpdateSchema, IntegrationUserSchema
 from structures.ws import WS
 from utils import helpers
@@ -22,7 +23,7 @@ async def like_update(update: EventSchema, **kwargs: dict) -> LikeTriggerRespons
     return await like_router.event(update_type=update.type, event=update, **kwargs)
 
 
-async def __ws_endpoint(ws: WS) -> None:
+async def ___ws_endpoint(ws: WS) -> None:
     """
     Websocket endpoint third level
 
@@ -35,11 +36,32 @@ async def __ws_endpoint(ws: WS) -> None:
     await like_router.start_listen(updates_from=ws.read(), ws=ws)
 
 
-async def _ws_endpoint(
+async def __ws_endpoint(
+    manager: WSManager,
     websocket: WebSocket,
     session_id: int,
     iuser: IntegrationUserSchema,
+    player: PlayerModel,
+) -> None:
+    ws = await manager.accept(
+        websocket=websocket, session_id=session_id, user_id=iuser.id, player_id=player.id
+    )
+
+    try:
+        await ___ws_endpoint(ws=ws)
+    except WebSocketDisconnect:
+        manager.remove(user_id=ws.user_id)
+    except ConnectionClosedError:
+        manager.remove(user_id=ws.user_id)
+    except Exception:
+        manager.remove(user_id=ws.user_id)
+
+
+async def _ws_endpoint(
     manager: WSManager,
+    websocket: WebSocket,
+    session_id: int,
+    iuser: IntegrationUserSchema,
 ) -> None:
     """
     Websocket endpoint second level.
@@ -66,23 +88,16 @@ async def _ws_endpoint(
     to_update = IntegrationPotUpdateSchema(pot=new_balance)
     await tools.store.integration_pot_accessor.update_pot(user_id=iuser.id, json=to_update)
 
-    ws = await manager.accept(
-        websocket=websocket, session_id=session_id, user_id=iuser.id, player_id=player.id
-    )
-
     try:
-        await __ws_endpoint(ws=ws)
-    except WebSocketDisconnect:
-        manager.remove(user_id=ws.user_id)
-    except ConnectionClosedError:
-        manager.remove(user_id=ws.user_id)
-    except Exception:
-        manager.remove(user_id=ws.user_id)
-
-    await helpers.delete_player(
-        player_id=ws.player_id,
-        preview_balance=new_balance,
-    )
+        await __ws_endpoint(
+            manager=manager, websocket=websocket, session_id=session_id, iuser=iuser, player=player
+        )
+    finally:
+        await helpers.delete_player(
+            player=player,
+            user_id=iuser.id,
+            preview_balance=new_balance,
+        )
 
 
 @router.websocket(
@@ -111,7 +126,7 @@ async def ws_endpoint(
 
     try:
         await _ws_endpoint(
-            websocket=websocket, session_id=session_id, iuser=iuser, manager=manager
+            manager=manager, websocket=websocket, session_id=session_id, iuser=iuser
         )
     finally:
         await tools.ws_managers.remove(session_id=session_id)

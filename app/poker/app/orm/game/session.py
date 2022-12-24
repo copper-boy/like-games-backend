@@ -8,7 +8,7 @@ from structures.enums import PlayerActionEnum
 class SessionModel(Base):
     id = Column(Integer, primary_key=True)
 
-    deck_id = Column(Integer, ForeignKey("deckmodel.id"))
+    deck_id = Column(Integer, ForeignKey("deckmodel.id"), unique=True)
     deck = relationship("DeckModel", back_populates="session")
 
     game_id = Column(Integer, ForeignKey("gamemodel.id"))
@@ -30,5 +30,5 @@ class SessionModel(Base):
 
     pot = Column(Integer, default=0)
 
-    round_id = Column(Integer, ForeignKey("roundmodel.id"))
+    round_id = Column(Integer, ForeignKey("roundmodel.id"), unique=True)
     round = relationship("RoundModel", back_populates="session")

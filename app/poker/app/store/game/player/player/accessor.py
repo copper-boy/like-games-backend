@@ -2,32 +2,26 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import asc, delete, func, select, update
+from sqlalchemy import asc, delete, func, insert, select, update
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from orm import PlayerModel, SessionModel, UserModel
+from orm import PlayerModel, SessionModel
 from store.base import BaseAccessor
-from structures.exceptions import DatabaseAccessorError
 
 
 class PlayerAccessor(BaseAccessor):
-    async def create_player(
-        self, session: AsyncSession, game_chips: int, user: UserModel, assign_to: SessionModel
+    async def create_player(  # noqa
+        self, session: AsyncSession, game_chips: int, user_id: int, session_id: int
     ) -> PlayerModel:
-        if user:
-            is_have_player = await self.store.game_user_accessor.is_have_player(
-                session=session, user_id=user.id
-            )
-            if is_have_player:
-                raise DatabaseAccessorError
+        to_return = await session.execute(
+            insert(PlayerModel)
+            .values(game_chips=game_chips, user_id=user_id, session_id=session_id)
+            .returning(PlayerModel)
+        )
 
-        to_return = PlayerModel(game_chips=game_chips, user=user, session=assign_to)
-
-        session.add(to_return)
-
-        return to_return
+        return to_return.one()
 
     async def update_player(  # noqa
         self, session: AsyncSession, player_id: int, values: dict

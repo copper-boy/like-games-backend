@@ -10,4 +10,4 @@ class RoundModel(Base):
 
     type = Column(Enum(RoundTypeEnum), default=RoundTypeEnum.preflop)
 
-    session = relationship("SessionModel", back_populates="round", uselist=False)
+    session = relationship("SessionModel", back_populates="round")

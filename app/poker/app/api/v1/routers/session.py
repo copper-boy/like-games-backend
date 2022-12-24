@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from core import depends, tools
+from orm import SessionModel
 from schemas import SessionSchema
 from utils import decorators
 
@@ -40,12 +41,13 @@ async def create_session(
       created session
     """
 
-    async with session.begin_nested() as nested_session:
-        to_return = await tools.store.game_session_accessor.create_session(
-            session=nested_session.session,
-            deck_id=deck_id,
-            game_id=game_id,
-            round_id=round_id,
-        )
+    to_select = await tools.store.game_session_accessor.create_session(
+        session=session,
+        deck_id=deck_id,
+        game_id=game_id,
+        round_id=round_id,
+    )
 
-    return to_return
+    return await tools.store.game_session_accessor.get_session_by(
+        session=session, where=(SessionModel.id == to_select.id)
+    )

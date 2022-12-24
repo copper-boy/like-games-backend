@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from core import depends, tools
+from orm import DeckModel
 from schemas import DeckSchema
 from utils import decorators
 
@@ -31,7 +32,8 @@ async def create_deck(
       Created deck
     """
 
-    async with session.begin_nested() as nested_session:
-        to_return = await tools.store.deck_accessor.create_deck(session=nested_session.session)
+    to_select = await tools.store.deck_accessor.create_deck(session=session)
 
-    return to_return
+    return await tools.store.deck_accessor.get_deck_by(
+        session=session, where=(DeckModel.id == to_select.id)
+    )

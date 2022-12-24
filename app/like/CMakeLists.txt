@@ -20,4 +20,4 @@ CPMAddPackage(
         GIT_TAG v1.8.1
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glaze drogon)
+target_link_libraries(${PROJECT_NAME} PRIVATE glaze::glaze drogon)

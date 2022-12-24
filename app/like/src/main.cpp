@@ -8,10 +8,10 @@
 
 auto main() -> int {
   drogon::app().registerHandler(
-      "/api.like/kind/holdem/evaluator",
+      "/api.like/holdem/evaluator",
       &like::poker::net::http::holdem::holdem_evaluator_router, {drogon::Post});
   drogon::app()
-      .setLogLevel(trantor::Logger::kInfo) // fuck you logger
+      .setLogLevel(trantor::Logger::kInfo)
       .addListener("0.0.0.0", 8080)
       .setThreadNum(0) // all threads used
       .run();

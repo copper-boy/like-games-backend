@@ -36,4 +36,4 @@ async def players_handler(event: EventSchema, ws: WS) -> None:
             "data": helpers.players_to_pydantic(players=players, exclude=ws.player_id),
         },
     )
-    await ws.manager.broadcast_json(event=answer_event)
+    await ws.manager.personal_json(event=answer_event, ws=ws)

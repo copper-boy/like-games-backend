@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from core import depends, tools
+from orm import UserModel
 from schemas import IntegrationUserSchema, UserSchema
 
 router = APIRouter()
@@ -29,10 +30,11 @@ async def me(
     :return:
       created user
     """
-    async with session.begin_nested() as nested_session:
-        user = await tools.store.game_user_accessor.create_user(
-            session=nested_session.session,
-            user_id=user.id,
-        )
+    to_select = await tools.store.game_user_accessor.create_user(
+        session=session,
+        user_id=user.id,
+    )
 
-    return user
+    return await tools.store.game_user_accessor.get_user_by(
+        session=session, where=(UserModel.id == to_select.id)
+    )

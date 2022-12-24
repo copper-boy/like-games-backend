@@ -2,40 +2,31 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import desc, func, select, update
+from sqlalchemy import desc, func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from orm import GameModel, PlayerModel, SessionModel
 from store.base import BaseAccessor
-from structures.exceptions import DatabaseAccessorError
 from utils import helpers
 
 
 class SessionAccessor(BaseAccessor):
-    async def create_session(
+    async def create_session(  # noqa
         self,
         session: AsyncSession,
         deck_id: int,
         game_id: int,
         round_id: int,
     ) -> SessionModel:
-        is_deck_have_session = await self.store.deck_accessor.is_already_taken(
-            session=session, deck_id=deck_id
+        to_return = await session.execute(
+            insert(SessionModel)
+            .values(deck_id=deck_id, game_id=game_id, round_id=round_id)
+            .returning(SessionModel)
         )
-        is_round_have_session = await self.store.game_round_accessor.is_already_taken(
-            session=session, round_id=round_id
-        )
-        if is_deck_have_session or is_round_have_session:
-            raise DatabaseAccessorError
+        return to_return.one()
 
-        to_return = SessionModel(deck_id=deck_id, game_id=game_id, round_id=round_id)
-
-        session.add(to_return)
-
-        return to_return
-
-    async def update_session(
+    async def update_session(  # noqa
         self, session: AsyncSession, session_id: int, values: dict
     ) -> None:  # noqa
         await session.execute(

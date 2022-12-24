@@ -6,19 +6,21 @@
 #define POKER_UTILITY_HPP
 
 namespace like {
-namespace poker {
+    namespace poker {
 #ifdef __GNUC__
-[[noreturn]] inline __attribute__((always_inline)) void unreachable() {
-  __builtin_unreachable();
-}
+        [[noreturn]] inline __attribute__((always_inline)) void unreachable() {
+            __builtin_unreachable();
+        }
 #elif defined(_MSC_VER)
-[[noreturn]] __forceinline void unreachable() { __assume(false); }
-#else // ???
-inline void unreachable() {
-  // unreachable not supported
-}
+        [[noreturn]] __forceinline void unreachable() {
+            __assume(false);
+        }
+#else                                                                                                     // ???
+        inline void unreachable() {
+            // unreachable not supported
+        }
 #endif
-} // namespace poker
+    } // namespace poker
 } // namespace like
 
-#endif // POKER_UTILITY_HPP
+#endif //POKER_UTILITY_HPP

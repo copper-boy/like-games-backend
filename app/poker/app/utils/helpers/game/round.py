@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import Optional
 
+from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import tools
 from db.session import session as sessionmaker
-from orm import PlayerModel, SessionModel
-from structures.enums import RoundTypeEnum
+from orm import CardModel, PlayerModel, SessionModel
+from schemas import IntegrationLikeEvaluatorRequestSchema
+from structures.enums import CardPositionEnum, RoundTypeEnum
 from utils import helpers
 
 
@@ -43,7 +45,7 @@ async def __preflop(asyncsession: AsyncSession, session: SessionModel) -> None:
             player_id=player.id,
         )
     await helpers.give_table_cards(
-        session=session, deck_id=session.deck_id, round_type=session.round.type
+        session=asyncsession, deck_id=session.deck_id, round_type=session.round.type
     )
 
     await __set_next_round(
@@ -72,7 +74,37 @@ async def __any_flop_to_river(asyncsession: AsyncSession, session: SessionModel)
 
 
 async def __showdown(asyncsession: AsyncSession, session: SessionModel) -> None:
-    ...
+    board = await tools.store.card_accessor.get_cards_by(
+        session=asyncsession,
+        where=and_(
+            CardModel.position == CardPositionEnum.table,
+            CardModel.deck_id == session.deck_id,
+        ),
+    )
+    board_list = [f"{card.rank}{card.suit}" for card in board]
+
+    players = await tools.store.game_player_accessor.get_players_by(
+        session=asyncsession, where=(PlayerModel.session_id == session.id)
+    )
+
+    hands: dict[int, str] = {}
+    for index, player in enumerate(players, start=0):
+        hand = await tools.store.card_accessor.get_cards_by(
+            session=asyncsession,
+            where=and_(
+                CardModel.position == CardPositionEnum.player,
+                CardModel.to_id == PlayerModel.id,
+                CardModel.deck_id == session.deck_id,
+            ),
+        )
+        hands[index] = "".join(f"{card.rank}{card.suit}" for card in hand)
+    hands_list = list(hands.values())
+
+    print(
+        await tools.store.integration_like_accessor.find_winners(
+            json=IntegrationLikeEvaluatorRequestSchema(board=board_list, hands=hands_list)
+        )
+    )
 
 
 async def _next_round_call(

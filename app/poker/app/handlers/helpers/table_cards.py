@@ -47,4 +47,4 @@ async def table_cards_handler(event: EventSchema, ws: WS) -> None:
             "data": helpers.cards_to_pydantic(cards=cards),
         },
     )
-    await ws.manager.broadcast_json(event=answer_event)
+    await ws.manager.personal_json(event=answer_event, ws=ws)

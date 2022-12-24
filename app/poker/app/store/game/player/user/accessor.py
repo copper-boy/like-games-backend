@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -12,16 +12,11 @@ from store.base import BaseAccessor
 
 class UserAccessor(BaseAccessor):
     async def create_user(self, session: AsyncSession, user_id: int) -> UserModel:  # noqa
-        to_return = UserModel(user_id=user_id)
+        to_return = await session.execute(
+            insert(UserModel).values(user_id=user_id).returning(UserModel)
+        )
 
-        session.add(to_return)
-
-        return to_return
-
-    async def is_have_player(self, session: AsyncSession, user_id: int) -> bool:
-        user = await self.get_user_by(session=session, where=(UserModel.id == user_id))
-
-        return bool(user.player)
+        return to_return.one()
 
     async def get_user_by(self, session: AsyncSession, where: Any) -> UserModel:  # noqa
         to_return = await session.execute(

@@ -109,4 +109,6 @@ class WSManagerList:
             )
 
         for player in players:
-            await helpers.delete_player(player_id=player.id, preview_balance=player.game_chips)
+            await helpers.delete_player(
+                player=player, user_id=player.user_id, preview_balance=player.game_chips
+            )

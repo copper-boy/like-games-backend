@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from core import depends, tools
+from orm import GameModel
 from schemas import GameSchema
 from utils import decorators
 
@@ -46,14 +47,15 @@ async def create_game(
       created game
     """
 
-    async with session.begin_nested() as nested_session:
-        to_return = await tools.store.game_accessor.create_game(
-            min_players=min_players,
-            max_players=max_players,
-            chips_to_join=chips_to_join,
-            small_blind=small_blind,
-            big_blind=big_blind,
-            session=nested_session.session,
-        )
+    to_select = await tools.store.game_accessor.create_game(
+        min_players=min_players,
+        max_players=max_players,
+        chips_to_join=chips_to_join,
+        small_blind=small_blind,
+        big_blind=big_blind,
+        session=session,
+    )
 
-    return to_return
+    return await tools.store.game_accessor.get_game_by(
+        session=session, where=(GameModel.id == to_select.id)
+    )

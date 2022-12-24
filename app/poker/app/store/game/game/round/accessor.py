@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -24,20 +24,11 @@ class RoundAccessor(BaseAccessor):
         }
 
     async def create_round(self, session: AsyncSession) -> RoundModel:  # noqa
-        to_return = RoundModel()
+        to_return = await session.execute(insert(RoundModel).returning(RoundModel))
 
-        session.add(to_return)
+        return to_return.one()
 
-        return to_return
-
-    async def is_already_taken(self, session: AsyncSession, round_id: int) -> bool:
-        to_check = await self.get_round_by(session=session, where=(RoundModel.id == round_id))
-
-        return bool(
-            to_check.session
-        )  # If no relationship is assigned to RoundModel.session then bool cast will return False.
-
-    async def update_round(
+    async def update_round(  # noqa
         self, session: AsyncSession, round_id: int, values: dict
     ) -> None:  # noqa
         await session.execute(update(RoundModel).where(RoundModel.id == round_id).values(**values))

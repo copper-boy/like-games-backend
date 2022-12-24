@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from core import tools
 from db.session import session as sessionmaker
 from likeevents import LikeF, LikeRouter
+from orm import SessionModel
 from schemas import EventSchema, SessionSchema
 from structures.ws import WS
-from utils import helpers
 
 router = LikeRouter()
 path = "helperGetSession"
@@ -26,7 +27,9 @@ async def session_handler(event: EventSchema, ws: WS) -> None:
     """
 
     async with sessionmaker.begin() as session:
-        s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
+        s = await tools.store.game_session_accessor.get_session_by(
+            session=session, where=(SessionModel.id == ws.session_id)
+        )
 
     answer_event = EventSchema(
         path=path,
@@ -34,4 +37,4 @@ async def session_handler(event: EventSchema, ws: WS) -> None:
             "data": SessionSchema.from_orm(s),
         },
     )
-    await ws.manager.personal_json(event=answer_event, connection=ws)
+    await ws.manager.personal_json(event=answer_event, ws=ws)

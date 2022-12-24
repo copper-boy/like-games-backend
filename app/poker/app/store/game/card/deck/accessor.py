@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -13,17 +13,15 @@ from structures.enums import CardPositionEnum
 
 class DeckAccessor(BaseAccessor):
     async def create_deck(self, session: AsyncSession) -> DeckModel:
-        to_return = DeckModel()
+        cursor = await session.execute(insert(DeckModel).returning(DeckModel))
+        to_return = cursor.one()
 
         cards_to_insert = self.store.logic_deck_accessor.make_deck(with_shuffle=True)
 
         for card_to_insert in cards_to_insert.deck:
             await self.store.card_accessor.create_card(
-                session=session, deck=to_return, card=card_to_insert
+                session=session, deck_id=to_return.id, card=card_to_insert
             )
-
-        session.add(to_return)
-
         return to_return
 
     async def is_already_taken(self, session: AsyncSession, deck_id: int) -> bool:

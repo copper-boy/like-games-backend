@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from orm import GameModel
@@ -19,17 +19,19 @@ class GameAccessor(BaseAccessor):
         small_blind: int = 50,
         big_blind: int = 100,
     ) -> GameModel:
-        to_return = GameModel(
-            min_players=min_players,
-            max_players=max_players,
-            chips_to_join=chips_to_join,
-            small_blind=small_blind,
-            big_blind=big_blind,
+        to_return = await session.execute(
+            insert(GameModel)
+            .values(
+                min_players=min_players,
+                max_players=max_players,
+                chips_to_join=chips_to_join,
+                small_blind=small_blind,
+                big_blind=big_blind,
+            )
+            .returning(GameModel)
         )
 
-        session.add(to_return)
-
-        return to_return
+        return to_return.one()
 
     async def get_game_by(self, session: AsyncSession, where: Any) -> GameModel:  # noqa
         to_return = await session.execute(select(GameModel).where(where))

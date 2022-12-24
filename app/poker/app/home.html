@@ -6,7 +6,8 @@
 </head>
 <body>
 
-<input id="text" type="text">
+<label for="text"></label><input id="text" type="text">
+<label for="payload"></label><input id="payload" type="text">
 <button onclick="sendMessage(event)">Send</button>
 
 <script>
@@ -20,8 +21,19 @@
     }
 
     function sendMessage(event) {
-        let message = {
-            path: "helperGetPlayers",
+        const text = document.getElementById("text").value;
+        const payload = document.getElementById("payload").value;
+
+        let message = {};
+        if (payload) {
+            message = {
+                path: text,
+                payload: JSON.parse(payload),
+            }
+        } else {
+            message = {
+                path: text,
+            }
         }
         ws.send(JSON.stringify(message));
 

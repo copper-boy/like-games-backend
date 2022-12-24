@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from core import depends, tools
+from orm import RoundModel
 from schemas import RoundSchema
 from utils import decorators
 
@@ -30,9 +31,8 @@ async def create_round(
       created round
     """
 
-    async with session.begin_nested() as nested_session:
-        to_return = await tools.store.game_round_accessor.create_round(
-            session=nested_session.session
-        )
+    to_select = await tools.store.game_round_accessor.create_round(session=session)
 
-    return to_return
+    return await tools.store.game_round_accessor.get_round_by(
+        session=session, where=(RoundModel.id == to_select.id)
+    )
