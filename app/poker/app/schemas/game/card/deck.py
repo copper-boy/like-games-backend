@@ -1,12 +1,10 @@
-from pydantic import BaseModel
+from __future__ import annotations
 
+from ...base import PokerServiceSchema
 from .card import CardSchema
 
 
-class DeckSchema(BaseModel):
+class DeckSchema(PokerServiceSchema):
     id: int
 
     cards: list[CardSchema]
-
-    class Config:
-        orm_mode = True

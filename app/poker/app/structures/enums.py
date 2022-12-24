@@ -1,12 +1,11 @@
 from enum import Enum
 
 
-class WSEventEnum(str, Enum):
-    game = "game"
-    helper = "helper"
-    server_side = "server_side"
-    error = "error"
-    server_error = "server_error"
+class EventEnum(str, Enum):
+    error = "like_error"
+    game = "like_game"
+    helper = "like_helper"
+    server = "like_server"
 
 
 class RegistrationTypeEnum(str, Enum):

@@ -1,6 +1,8 @@
-from .connection.builder import ConnectionFactory
+from __future__ import annotations
+
+from .ws.builder import WSFactory
 
 
 class Factory:
     def __init__(self) -> None:
-        self.connection_factory = ConnectionFactory()
+        self.ws_factory = WSFactory()

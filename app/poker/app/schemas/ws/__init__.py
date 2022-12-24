@@ -1,3 +1,3 @@
-from .event import WSEventSchema
+from .event import EventSchema
 
-__all__ = ("WSEventSchema",)
+__all__ = ("EventSchema",)

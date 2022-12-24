@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import token
 
 from fastapi_jwt_auth import AuthJWT

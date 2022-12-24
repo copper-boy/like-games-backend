@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi.requests import Request
 
 from core.config import get_site_settings

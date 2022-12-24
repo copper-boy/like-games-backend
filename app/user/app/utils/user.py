@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi.exceptions import HTTPException
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.ext.asyncio import AsyncSession

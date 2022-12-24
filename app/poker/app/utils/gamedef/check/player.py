@@ -1,12 +1,19 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import tools
 from utils import helpers
 
+if TYPE_CHECKING:
+    from ws import WSManager
+
 
 async def check_player(
     session: AsyncSession,
-    manager,
+    manager: WSManager,
     session_id: int,
     player_id: int,
 ) -> None:

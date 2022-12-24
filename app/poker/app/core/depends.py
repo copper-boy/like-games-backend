@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi.requests import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .aiohttp_session.accessor import SessionAccessor
 from .integration import IntegrationUserAccessor
 from .pot.accessor import PotAccessor

@@ -1,9 +1,9 @@
-from sqlalchemy import and_
+from __future__ import annotations
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import tools
-from orm import CardModel, PlayerModel, SessionModel
-from structures.enums import CardPositionEnum
+from orm import PlayerModel, SessionModel
 from structures.exceptions.ws.errors import WSStateError
 
 

@@ -1,25 +1,30 @@
+from __future__ import annotations
+
 from sqlalchemy import and_
 
 from core import tools
 from db.session import session as sessionmaker
-from misc import router
+from likeevents import LikeF, LikeRouter
 from orm import CardModel
-from schemas import WSEventSchema
+from schemas import EventSchema
 from structures.enums import CardPositionEnum, RoundTypeEnum
 from structures.exceptions import WSCommandError
-from structures.ws import WSConnection
+from structures.ws import WS
 from utils import helpers
 
+router = LikeRouter()
+path = "helperGeyPlayerCards"
 
-@router.helper(to_filter="playercards")
-async def playercards_handler(data: WSEventSchema, ws: WSConnection) -> None:
+
+@router.like_helper(LikeF.path == path)
+async def player_cards_handler(event: EventSchema, ws: WS) -> None:
     """
     Gets the player cards by player id
 
-    :param data:
+    :param event:
       required data received from client
     :param ws:
-      constructed websocket connection
+      constructed ws connection
     :return:
       None
     :raise WSCommandError:
@@ -28,7 +33,7 @@ async def playercards_handler(data: WSEventSchema, ws: WSConnection) -> None:
       when game not started
     """
 
-    player_id = data.payload.data.get("player_id")
+    player_id = event.payload.data.get("player_id")
 
     async with sessionmaker.begin() as session:
         s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
@@ -44,8 +49,8 @@ async def playercards_handler(data: WSEventSchema, ws: WSConnection) -> None:
         else:
             raise WSCommandError
 
-    answer_event = WSEventSchema(
-        event="game",
+    answer_event = EventSchema(
+        path=path,
         payload={
             "to_filter": "playercards",
             "data": helpers.cards_to_pydantic(cards=cards),

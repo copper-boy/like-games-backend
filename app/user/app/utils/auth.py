@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from passlib.context import CryptContext
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession

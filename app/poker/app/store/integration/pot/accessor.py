@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from core.config import get_admin_settings, get_site_settings
 from schemas import IntegrationPotSchema, IntegrationPotUpdateSchema
 from store.base import BaseAccessor

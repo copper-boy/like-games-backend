@@ -1,109 +1,38 @@
 from fastapi import APIRouter
 from fastapi.param_functions import Depends, Path
 from fastapi.websockets import WebSocket, WebSocketDisconnect
-from loguru import logger
-from starlette import status
 from websockets.exceptions import ConnectionClosedError
 
 from core import tools
-from misc import router as ws_router
-from schemas import IntegrationPotUpdateSchema, IntegrationUserSchema, WSEventSchema
-from structures.enums import WSEventEnum
-from structures.exceptions import (
-    BaseWSError,
-    WSAlreadyConnectedError,
-    WSCommandError,
-    WSConnectionError,
-    WSStateError,
-    WSUnhandledEndpointError,
-    WSUnhandledEventError,
-)
-from structures.ws import WSConnection
+from handlers import router as handlers_router
+from likeevents import LikeRootRouter
+from likeevents.liketypes import LikeTriggerResponseNamedTuple
+from schemas import EventSchema, IntegrationPotUpdateSchema, IntegrationUserSchema
+from structures.ws import WS
 from utils import helpers
 from ws import WSManager
 
 router = APIRouter()
+like_router = LikeRootRouter()
+like_router.include_router(handlers_router)
 
 
-async def __ws_endpoint(ws_connection: WSConnection) -> None:
+@like_router.like_update()
+async def like_update(update: EventSchema, **kwargs: dict) -> LikeTriggerResponseNamedTuple:
+    return await like_router.event(update_type=update.type, event=update, **kwargs)
+
+
+async def __ws_endpoint(ws: WS) -> None:
     """
     Websocket endpoint third level
 
-    :param ws_connection:
+    :param ws:
       constructed websocket connection
     :return:
       None
     """
 
-    while True:
-        data = await ws_connection.read()
-
-        try:
-            await ws_router.event(data=data, ws=ws_connection)
-        except WSUnhandledEndpointError as e:
-            bad_event = WSEventSchema(
-                event=WSEventEnum.error,
-                payload={
-                    "to_filter": data.payload.to_filter,
-                    "data": {
-                        "exception": str(e),
-                        "exception_name": e.__class__.__name__.lower(),
-                    },
-                },
-            )
-            await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
-        except WSUnhandledEventError as e:
-            logger.exception(e)
-            bad_event = WSEventSchema(
-                event=WSEventEnum.error,
-                payload={
-                    "to_filter": data.payload.to_filter,
-                    "data": {
-                        "exception": str(e),
-                        "exception_name": e.__class__.__name__.lower(),
-                    },
-                },
-            )
-            await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
-        except WSCommandError as e:
-            logger.exception(e)
-            bad_event = WSEventSchema(
-                event=WSEventEnum.error,
-                payload={
-                    "to_filter": data.payload.to_filter,
-                    "data": {
-                        "exception": str(e),
-                        "exception_name": e.__class__.__name__.lower(),
-                    },
-                },
-            )
-            await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
-        except BaseWSError as e:
-            logger.exception(e)
-            bad_event = WSEventSchema(
-                event=WSEventEnum.error,
-                payload={
-                    "to_filter": data.payload.to_filter,
-                    "data": {
-                        "exception": str(e),
-                        "exception_name": e.__class__.__name__.lower(),
-                    },
-                },
-            )
-            await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
-        except Exception as e:
-            logger.exception(e)
-            bad_event = WSEventSchema(
-                event=WSEventEnum.server_error,
-                payload={
-                    "to_filter": data.payload.to_filter,
-                    "data": {
-                        "exception": "Exception detail not allowed in server exceptions",
-                        "exception_name": "Exception name not allowed in server exceptions",
-                    },
-                },
-            )
-            await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
+    await like_router.start_listen(updates_from=ws.read(), ws=ws)
 
 
 async def _ws_endpoint(
@@ -129,61 +58,29 @@ async def _ws_endpoint(
 
     pot = await tools.store.integration_pot_accessor.get_pot(user_id=iuser.id)
 
-    try:
-        ws_connection = await manager.accept(
-            websocket=websocket, user_id=iuser.id, session_id=session_id
-        )
-    except WSAlreadyConnectedError as e:
-        logger.exception(e)
-        return await websocket.close(
-            code=status.WS_1013_TRY_AGAIN_LATER,
-            reason="already connected",
-        )
-    try:
-        new_balance, player = await helpers.new_player(
-            manager=ws_connection.manager,
-            session_id=ws_connection.session_id,
-            user_id=ws_connection.user_id,
-            pot=pot.pot,
-        )
-    except WSConnectionError as e:
-        logger.exception(e)
-        bad_event = WSEventSchema(
-            event=WSEventEnum.error,
-            payload={
-                "data": {
-                    "exception": str(e),
-                    "exception_name": e.__class__.__name__.lower(),
-                },
-            },
-        )
-        await ws_connection.manager.personal_json(event=bad_event, connection=ws_connection)
+    new_balance, player = await helpers.new_player(
+        session_id=session_id,
+        user_id=iuser.id,
+        pot=pot.pot,
+    )
+    to_update = IntegrationPotUpdateSchema(pot=new_balance)
+    await tools.store.integration_pot_accessor.update_pot(user_id=iuser.id, json=to_update)
 
-        return await manager.remove(user_id=ws_connection.user_id)
-    except WSStateError as e:
-        logger.exception(e)
-        return await websocket.close(
-            code=status.WS_1013_TRY_AGAIN_LATER,
-            reason="unable to join",
-        )
-    else:
-        to_update = IntegrationPotUpdateSchema(pot=new_balance)
-        await tools.store.integration_pot_accessor.update_pot(user_id=iuser.id, json=to_update)
-
-    ws_connection.player_id = player.id
+    ws = await manager.accept(
+        websocket=websocket, session_id=session_id, user_id=iuser.id, player_id=player.id
+    )
 
     try:
-        await __ws_endpoint(ws_connection=ws_connection)
+        await __ws_endpoint(ws=ws)
     except WebSocketDisconnect:
-        await manager.remove(user_id=ws_connection.user_id)
+        manager.remove(user_id=ws.user_id)
     except ConnectionClosedError:
-        await manager.remove(user_id=ws_connection.user_id)
+        manager.remove(user_id=ws.user_id)
     except Exception:
-        await manager.remove(user_id=ws_connection.user_id)
+        manager.remove(user_id=ws.user_id)
 
     await helpers.delete_player(
-        manager=ws_connection.manager,
-        player_id=ws_connection.player_id,
+        player_id=ws.player_id,
         preview_balance=new_balance,
     )
 
@@ -210,7 +107,6 @@ async def ws_endpoint(
     :return:
       None
     """
-
     manager = tools.ws_managers.get(session_id=session_id)
 
     try:

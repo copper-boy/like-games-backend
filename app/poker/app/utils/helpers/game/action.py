@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import tools
 from structures.enums import PlayerActionEnum
+from structures.ws import WS
 
 
 async def release_action(
@@ -13,6 +16,7 @@ async def release_action(
     player_id: int,
     bet: int,
     action: PlayerActionEnum,
+    ws: WS,
 ) -> None:
     await tools.store.game_session_accessor.update_session(
         session=session,
@@ -25,3 +29,6 @@ async def release_action(
         },
     )
     await tools.store.game_session_accessor.set_next_player(session=session, session_id=session_id)
+
+    if ws.timeout_task:
+        ws.timeout_task.cancel()

@@ -1,24 +1,29 @@
+from __future__ import annotations
+
 from sqlalchemy import and_
 
 from core import tools
 from db.session import session as sessionmaker
-from misc import router
+from likeevents import LikeF, LikeRouter
 from orm import CardModel
-from schemas import WSEventSchema
+from schemas import EventSchema
 from structures.enums import CardPositionEnum
-from structures.ws import WSConnection
+from structures.ws import WS
 from utils import helpers
 
+router = LikeRouter()
+path = "helperGetTableCards"
 
-@router.helper(to_filter="tablecards")
-async def tablecards_handler(data: WSEventSchema, ws: WSConnection) -> None:
+
+@router.like_helper(LikeF.path == path)
+async def table_cards_handler(event: EventSchema, ws: WS) -> None:
     """
     Returns the table cards
 
-    :param data:
+    :param event:
       optional data received from client
     :param ws:
-      constructed websocket connection
+      constructed ws connection
     :return:
       None
     :raise WSStateError:
@@ -36,10 +41,9 @@ async def tablecards_handler(data: WSEventSchema, ws: WSConnection) -> None:
             ),
         )
 
-    answer_event = WSEventSchema(
-        event="game",
+    answer_event = EventSchema(
+        path=path,
         payload={
-            "to_filter": "mecards",
             "data": helpers.cards_to_pydantic(cards=cards),
         },
     )

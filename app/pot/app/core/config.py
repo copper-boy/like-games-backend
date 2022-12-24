@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import lru_cache
 
 from pydantic import BaseSettings
@@ -5,9 +7,6 @@ from pydantic import BaseSettings
 
 class AdminSettings(BaseSettings):
     ADMIN_INFINITY_ACCESS_TOKEN: str
-    ADMIN_LOGIN: str
-    ADMIN_PASSWORD: str
-    ADMIN_WORD: str
 
 
 @lru_cache()

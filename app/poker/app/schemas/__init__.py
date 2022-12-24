@@ -17,7 +17,7 @@ from .integration import (
     IntegrationPotUpdateSchema,
     IntegrationUserSchema,
 )
-from .ws import WSEventSchema
+from .ws import EventSchema
 
 __all__ = (
     "CardSchema",
@@ -35,5 +35,5 @@ __all__ = (
     "IntegrationPotSchema",
     "IntegrationPotUpdateSchema",
     "IntegrationUserSchema",
-    "WSEventSchema",
+    "EventSchema",
 )

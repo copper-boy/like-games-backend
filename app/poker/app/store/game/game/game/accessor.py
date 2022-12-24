@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from typing import Any
 
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from orm import GameModel
@@ -8,7 +10,7 @@ from store.base import BaseAccessor
 
 
 class GameAccessor(BaseAccessor):
-    async def create_game(
+    async def create_game(  # noqa
         self,
         session: AsyncSession,
         min_players: int = 2,
@@ -29,7 +31,7 @@ class GameAccessor(BaseAccessor):
 
         return to_return
 
-    async def get_game_by(self, session: AsyncSession, where: Any) -> GameModel:
+    async def get_game_by(self, session: AsyncSession, where: Any) -> GameModel:  # noqa
         to_return = await session.execute(select(GameModel).where(where))
 
         return to_return.scalar()

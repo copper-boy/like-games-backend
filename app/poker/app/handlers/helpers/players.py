@@ -1,23 +1,38 @@
+from __future__ import annotations
+
 from core import tools
 from db.session import session as sessionmaker
-from misc import router
+from likeevents import LikeF, LikeRouter
 from orm import PlayerModel
-from schemas import WSEventSchema
-from structures.ws import WSConnection
+from schemas import EventSchema
+from structures.ws import WS
 from utils import helpers
 
+router = LikeRouter()
+path = "helperGetPlayers"
 
-@router.helper(to_filter="players")
-async def players_handler(data: WSEventSchema, ws: WSConnection) -> None:
+
+@router.like_helper(LikeF.path == path)
+async def players_handler(event: EventSchema, ws: WS) -> None:
+    """
+    Gets the players in the game
+
+    :param event:
+      required data received from client
+    :param ws:
+      constructed ws connection
+    :return:
+      None
+    """
+
     async with sessionmaker.begin() as session:
         players = await tools.store.game_player_accessor.get_players_by(
             session=session, where=(PlayerModel.session_id == ws.session_id)
         )
 
-    answer_event = WSEventSchema(
-        event="helper",
+    answer_event = EventSchema(
+        path=path,
         payload={
-            "to_filter": "players",
             "data": helpers.players_to_pydantic(players=players, exclude=ws.player_id),
         },
     )

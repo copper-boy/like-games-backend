@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from orm import CardModel, PlayerModel
 from schemas import CardSchema, PlayerSchema
 

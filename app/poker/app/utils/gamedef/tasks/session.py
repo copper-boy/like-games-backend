@@ -1,14 +1,20 @@
+from __future__ import annotations
+
 from asyncio import sleep
+from typing import TYPE_CHECKING
 
 from core import tools
 from db.session import session as sessionmaker
-from schemas import WSEventSchema
+from schemas import EventSchema
 from utils import helpers
 
+if TYPE_CHECKING:
+    from ws import WSManager
 
-async def start_session_task(manager, session_id: int) -> None:
+
+async def start_session_task(manager: WSManager, session_id: int) -> None:
     await manager.broadcast_json(
-        event=WSEventSchema(
+        event=EventSchema(
             event="game",
             payload={
                 "to_filter": "game_start",
@@ -40,7 +46,7 @@ async def start_session_task(manager, session_id: int) -> None:
         )
 
     await manager.broadcast_json(
-        event=WSEventSchema(
+        event=EventSchema(
             event="game",
             payload={
                 "to_filter": "game_start",

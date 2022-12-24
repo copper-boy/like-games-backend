@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aiohttp.client_exceptions import ClientResponseError
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException

@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 from asyncio import create_task
+from typing import TYPE_CHECKING
 
 from core import tools
 from db.session import session as sessionmaker
 from orm import SessionModel
 
+if TYPE_CHECKING:
+    from ws import WSManager
+
 from .tasks import start_session_task
 
 
-async def need_to_start(manager, session_id: int) -> None:
+async def need_to_start(manager: WSManager, session_id: int) -> None:
     async with sessionmaker.begin() as asyncsession:
         session = await tools.store.game_session_accessor.get_session_by(
             session=asyncsession, where=(SessionModel.id == session_id)

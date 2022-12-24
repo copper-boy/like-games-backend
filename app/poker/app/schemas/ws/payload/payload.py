@@ -1,9 +1,9 @@
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import Union
 
 from pydantic import BaseModel
 
 
-class WSPayloadSchema(BaseModel):
-    to_filter: Optional[str]
-
-    data: Optional[Union[str, dict, list]]
+class PayloadSchema(BaseModel):
+    data: Union[str, dict, list]

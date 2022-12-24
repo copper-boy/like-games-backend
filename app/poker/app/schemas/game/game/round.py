@@ -1,12 +1,11 @@
-from pydantic import BaseModel
+from __future__ import annotations
 
 from structures.enums import RoundTypeEnum
 
+from ...base import PokerServiceSchema
 
-class RoundSchema(BaseModel):
+
+class RoundSchema(PokerServiceSchema):
     id: int
 
     type: RoundTypeEnum
-
-    class Config:
-        orm_mode = True

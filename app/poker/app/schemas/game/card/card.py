@@ -1,9 +1,11 @@
-from pydantic import BaseModel
+from __future__ import annotations
 
 from structures.enums import CardPositionEnum
 
+from ...base import PokerServiceSchema
 
-class CardSchema(BaseModel):
+
+class CardSchema(PokerServiceSchema):
     id: int
 
     rank: str
@@ -11,6 +13,3 @@ class CardSchema(BaseModel):
 
     position: CardPositionEnum
     to_id: int
-
-    class Config:
-        orm_mode = True

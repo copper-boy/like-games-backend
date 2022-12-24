@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from asyncio import Task
 from typing import Any, Optional
 
@@ -7,9 +9,9 @@ from core import tools
 from db.session import session
 from misc import sch
 from orm import PlayerModel
-from schemas import WSEventSchema
+from schemas import EventSchema
 from structures.exceptions import WSAlreadyConnectedError
-from structures.ws import WSConnection
+from structures.ws import WS
 from tasks import gamedef_thread
 from utils import helpers
 
@@ -27,50 +29,52 @@ class WSManager(BaseWSManager, BaseWSMessageManager):
 
     @property
     def connected(self) -> int:
-        return len(self._connections)
+        return len(self._wss)
 
-    async def accept(self, session_id: int, websocket: WebSocket, user_id: int) -> WSConnection:
+    async def accept(
+        self, websocket: WebSocket, session_id: int, user_id: int, player_id: int
+    ) -> WS:
         await websocket.accept()
 
-        is_connected = self.connection(user_id=user_id)
+        is_connected = self.ws(user_id=user_id)
         if is_connected:
             raise WSAlreadyConnectedError
 
-        connection = tools.factory.connection_factory.build(
-            session_id=session_id, websocket=websocket, user_id=user_id
+        ws = tools.factory.ws_factory.build(
+            manager=self,
+            websocket=websocket,
+            session_id=session_id,
+            user_id=user_id,
+            player_id=player_id,
         )
-        connection.manager = self
-        self._connections[user_id] = connection
+        ws.manager = self
+        self._wss[user_id] = ws
 
-        return connection
+        return ws
 
-    async def remove(self, user_id: int) -> None:
-        ws_connection = self._connections.pop(user_id)
-        try:
-            await ws_connection.websocket.close()
-        except RuntimeError:
-            ...
+    def remove(self, user_id: int) -> None:
+        self._wss.pop(user_id)
 
-    def connection(self, user_id: int) -> WSConnection:
-        connection = self._connections.get(user_id)
+    def ws(self, user_id: int) -> WS:
+        ws = self._wss.get(user_id)
 
-        return connection
+        return ws
 
-    async def broadcast_json(self, event: WSEventSchema) -> None:
+    async def broadcast_json(self, event: EventSchema) -> None:
         to_dict = event.dict()
-        for user_id, connection in self._connections.items():
+        for user_id, ws in self._wss.items():
             try:
-                await connection.websocket.send_json(data=to_dict)
+                await ws.websocket.send_json(data=to_dict)
             except RuntimeError:
-                self._connections.pop(user_id)
+                self.remove(user_id=user_id)
 
-    async def personal_json(self, event: WSEventSchema, connection: WSConnection) -> None:
+    async def personal_json(self, event: EventSchema, ws: WS) -> None:
         to_dict = event.dict()
 
         try:
-            await connection.websocket.send_json(data=to_dict)
+            await ws.websocket.send_json(data=to_dict)
         except RuntimeError:
-            self._connections.pop(connection.user_id)
+            self.remove(user_id=ws.user_id)
 
 
 class WSManagerList:
@@ -88,7 +92,7 @@ class WSManagerList:
             func=gamedef_thread, kwargs={"session_id": session_id}, trigger="interval", seconds=0.5
         )
 
-        return self.managers[session_id]
+        return manager
 
     async def remove(self, session_id: int) -> None:
         exists = self.managers.get(session_id, None)
@@ -105,6 +109,4 @@ class WSManagerList:
             )
 
         for player in players:
-            await helpers.delete_player(
-                manager=None, player_id=player.id, preview_balance=player.game_chips
-            )
+            await helpers.delete_player(player_id=player.id, preview_balance=player.game_chips)

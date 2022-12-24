@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from core.config import get_site_settings
 from schemas import IntegrationLikeEvaluatorRequestSchema, IntegrationLikeEvaluatorResponseSchema
 from store.base import BaseAccessor

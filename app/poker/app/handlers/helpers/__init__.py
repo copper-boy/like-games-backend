@@ -1,15 +1,13 @@
-from .commands import commands_handler
-from .mecards import mecards_handler
-from .playercards import playercards_handler
-from .players import players_handler
-from .session import session_handler
-from .tablecards import tablecards_handler
+from .my_cards import router as my_cards_router
+from .player_cards import router as player_cards_router
+from .players import router as players_router
+from .session import router as session_router
+from .table_cards import router as table_cards_router
 
 __all__ = (
-    "commands_handler",
-    "mecards_handler",
-    "playercards_handler",
-    "players_handler",
-    "session_handler",
-    "tablecards_handler",
+    "my_cards_router",
+    "player_cards_router",
+    "players_router",
+    "session_router",
+    "table_cards_router",
 )

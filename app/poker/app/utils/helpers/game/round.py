@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import tools
 from db.session import session as sessionmaker
-from orm import SessionModel
+from orm import PlayerModel, SessionModel
 from structures.enums import RoundTypeEnum
 from utils import helpers
 
@@ -30,56 +32,70 @@ async def __set_next_round(
             )
 
 
+async def __preflop(asyncsession: AsyncSession, session: SessionModel) -> None:
+    players = await tools.store.game_player_accessor.get_players_by(
+        session=asyncsession, where=(PlayerModel.session_id == session.id)
+    )
+    for player in players:
+        await helpers.give_player_cards(
+            session=asyncsession,
+            deck_id=session.deck_id,
+            player_id=player.id,
+        )
+    await helpers.give_table_cards(
+        session=session, deck_id=session.deck_id, round_type=session.round.type
+    )
+
+    await __set_next_round(
+        asyncsession=asyncsession,
+        session=session,
+        expression=(
+            session.last_player == session.big_blind_position
+            and session.current_player == session.small_blind_position
+        ),
+        to_id=session.big_blind_position,
+    )
+
+
+async def __any_flop_to_river(asyncsession: AsyncSession, session: SessionModel) -> None:
+    if await helpers.is_all_allin(session=asyncsession, session_id=session.id):
+        expression = True
+    else:
+        expression = session.last_player == session.small_blind_position
+
+    await __set_next_round(
+        asyncsession=asyncsession,
+        session=session,
+        expression=expression,
+        to_id=session.small_blind_position,
+    )
+
+
+async def __showdown(asyncsession: AsyncSession, session: SessionModel) -> None:
+    ...
+
+
 async def _next_round_call(
     asyncsession: AsyncSession,
     session_id: int,
 ) -> RoundTypeEnum:
     session = await helpers.get_session_with_raise(session=asyncsession, session_id=session_id)
-
-    match session.round.type:
-        case RoundTypeEnum.preflop:
-
-            await __set_next_round(
-                asyncsession=asyncsession,
-                session=session,
-                expression=(
-                    session.last_player == session.big_blind_position
-                    and session.current_player == session.small_blind_position
-                ),
-                to_id=session.big_blind_position,
-            )
-        case RoundTypeEnum.showdown:
-            # TODO: find winner here
-            ...
-        case _:
-            if await helpers.is_all_allin(session=asyncsession, session_id=session.id):
-                expression = True
-            else:
-                expression = session.last_player == session.small_blind_position
-
-            await __set_next_round(
-                asyncsession=asyncsession,
-                session=session,
-                expression=expression,
-                to_id=session.small_blind_position,
-            )
+    to_call = {RoundTypeEnum.preflop: __preflop, RoundTypeEnum.showdown: __showdown}
+    await to_call.get(session.round.type, __any_flop_to_river)(
+        asyncsession=asyncsession, session=session
+    )
 
     return session.round.type
 
 
 async def next_round_call(
     session_id: int,
-    manager,
     asyncsession: Optional[AsyncSession] = None,
 ) -> RoundTypeEnum:
     if asyncsession:
-        result = await _next_round_call(
-            asyncsession=asyncsession, session_id=session_id, manager=manager
-        )
+        result = await _next_round_call(asyncsession=asyncsession, session_id=session_id)
     else:
         async with sessionmaker.begin() as asyncsession:
-            result = await _next_round_call(
-                asyncsession=asyncsession, session_id=session_id, manager=manager
-            )
+            result = await _next_round_call(asyncsession=asyncsession, session_id=session_id)
 
     return result

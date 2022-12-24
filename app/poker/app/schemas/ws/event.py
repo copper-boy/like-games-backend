@@ -1,11 +1,24 @@
-from pydantic import BaseModel
+from __future__ import annotations
 
-from structures.enums import WSEventEnum
+from typing import Optional
 
-from .payload import WSPayloadSchema
+from likeevents.schema import LikeEventSchema
+from structures.enums import EventEnum
+
+from .payload import PayloadSchema
 
 
-class WSEventSchema(BaseModel):
-    event: WSEventEnum
+class EventSchema(LikeEventSchema):
+    path: str
+    payload: Optional[PayloadSchema] = None
 
-    payload: WSPayloadSchema
+    @property
+    def type(self) -> EventEnum:
+        type: list[str] = []  # noqa
+
+        for letter in self.path:
+            if letter.isupper():
+                break
+            type.append(letter)
+
+        return EventEnum("like_" + "".join(type))

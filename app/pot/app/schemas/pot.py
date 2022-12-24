@@ -1,14 +1,16 @@
-from pydantic import BaseModel
+from __future__ import annotations
+
+from .base import PotServiceSchema
 
 
-class PotSchema(BaseModel):
-    id: int | None = None
-    user_id: int | None = None
-    pot: int | None = None
+class PotSchema(PotServiceSchema):
+    id: int
+    user_id: int
+    pot: int
 
     class Config:
         orm_mode = True
 
 
-class PotUpdateSchema(BaseModel):
+class PotUpdateSchema(PotServiceSchema):
     pot: int

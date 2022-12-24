@@ -1,9 +1,10 @@
-from pydantic import BaseModel
+from __future__ import annotations
 
+from ...base import PokerServiceSchema
 from .user import UserSchema
 
 
-class PlayerSchema(BaseModel):
+class PlayerSchema(PokerServiceSchema):
     id: int
 
     game_chips: int
@@ -15,6 +16,3 @@ class PlayerSchema(BaseModel):
     is_folded: bool
 
     user: UserSchema
-
-    class Config:
-        orm_mode = True

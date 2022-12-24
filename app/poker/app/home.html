@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<input id="text" type="text">
+<button onclick="sendMessage(event)">Send</button>
+
+<script>
+    let ws = new WebSocket("ws://localhost/api.poker/ws/1");
+
+    ws.onopen = (event) => {
+        console.log("connected");
+    };
+    ws.onmessage = (event) => {
+        console.log(event.data);
+    }
+
+    function sendMessage(event) {
+        let message = {
+            path: "helperGetPlayers",
+        }
+        ws.send(JSON.stringify(message));
+
+        event.preventDefault();
+    }
+</script>
+</body>
+</html>

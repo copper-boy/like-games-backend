@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from __future__ import annotations
+
+from ...base import PokerServiceSchema
 
 
-class GameSchema(BaseModel):
+class GameSchema(PokerServiceSchema):
     id: int
 
     min_players: int
@@ -11,6 +13,3 @@ class GameSchema(BaseModel):
 
     small_blind: int
     big_blind: int
-
-    class Config:
-        orm_mode = True

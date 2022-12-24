@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from random import shuffle
 
 from schemas.game import LogicCardSchema, LogicDeckSchema
@@ -6,7 +8,7 @@ from structures.constants import CARD_RANK, CARD_SUIT
 
 
 class DeckAccessor(BaseAccessor):
-    def __generate_deck(self) -> list[LogicCardSchema]:
+    def __generate_deck(self) -> list[LogicCardSchema]:  # noqa
         to_return: list[LogicCardSchema] = []
         for suit in CARD_SUIT:
             for rank in CARD_RANK:

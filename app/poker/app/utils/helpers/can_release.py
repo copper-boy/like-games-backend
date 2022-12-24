@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from orm import PlayerModel
 from structures.enums import PlayerActionEnum
 from structures.exceptions import WSCommandError

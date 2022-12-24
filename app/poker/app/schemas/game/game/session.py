@@ -1,9 +1,11 @@
-from pydantic import BaseModel
+from __future__ import annotations
 
 from structures.enums import PlayerActionEnum
 
+from ...base import PokerServiceSchema
 
-class SessionSchema(BaseModel):
+
+class SessionSchema(PokerServiceSchema):
     id: int
 
     game_id: int
@@ -24,12 +26,6 @@ class SessionSchema(BaseModel):
 
     pot: int
 
-    class Config:
-        orm_mode = True
 
-
-class SessionFilterCountSchema(BaseModel):
+class SessionFilterCountSchema(PokerServiceSchema):
     count: int
-
-    class Config:
-        orm_mode = True

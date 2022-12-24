@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Enum, Integer
+from sqlalchemy import Column, Enum, Integer
 from sqlalchemy.orm import relationship
 
 from db.base import Base

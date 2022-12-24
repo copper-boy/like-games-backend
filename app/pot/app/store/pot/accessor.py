@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import select, update
@@ -19,7 +21,7 @@ class PotAccessor(BaseAccessor):
 
         return to_return
 
-    async def update_pot(
+    async def update_pot(  # noqa
         self,
         session: AsyncSession,
         pot_id: int,
@@ -27,7 +29,7 @@ class PotAccessor(BaseAccessor):
     ) -> None:
         await session.execute(update(PotModel).where(PotModel.id == pot_id).values(pot=pot))
 
-    async def get_pot_by(self, session: AsyncSession, where: Any) -> PotModel:
+    async def get_pot_by(self, session: AsyncSession, where: Any) -> PotModel:  # noqa
         to_return = await session.execute(select(PotModel).where(where))
 
         return to_return.scalar()

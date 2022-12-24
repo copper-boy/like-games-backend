@@ -1,20 +1,25 @@
+from __future__ import annotations
+
 from db.session import session as sessionmaker
-from misc import router
-from schemas import WSEventSchema
+from likeevents import LikeF, LikeRouter
+from schemas import EventSchema
 from structures.enums import PlayerActionEnum
-from structures.ws import WSConnection
+from structures.ws import WS
 from utils import helpers
 
+router = LikeRouter()
+path = "gameDoCall"
 
-@router.game(to_filter="call")
-async def call_handler(data: WSEventSchema, ws: WSConnection) -> None:
+
+@router.like_game(LikeF.path == path)
+async def call_handler(event: EventSchema, ws: WS) -> None:
     """
     Executes the call action
 
-    :param data:
+    :param event:
       optional data received from client
     :param ws:
-      constructed websocket connection
+      constructed ws connection
     :return:
       None
     :raise WSCommandError:
@@ -43,4 +48,5 @@ async def call_handler(data: WSEventSchema, ws: WSConnection) -> None:
             player_id=player.id,
             bet=to_call,
             action=PlayerActionEnum.call,
+            ws=ws,
         )

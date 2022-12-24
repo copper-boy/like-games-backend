@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import desc, func, select, update
@@ -33,12 +35,14 @@ class SessionAccessor(BaseAccessor):
 
         return to_return
 
-    async def update_session(self, session: AsyncSession, session_id: int, values: dict) -> None:
+    async def update_session(
+        self, session: AsyncSession, session_id: int, values: dict
+    ) -> None:  # noqa
         await session.execute(
             update(SessionModel).where(SessionModel.id == session_id).values(**values)
         )
 
-    async def get_session_by(self, session: AsyncSession, where: Any) -> SessionModel:
+    async def get_session_by(self, session: AsyncSession, where: Any) -> SessionModel:  # noqa
         to_return = await session.execute(
             select(SessionModel)
             .where(where)
@@ -93,7 +97,7 @@ class SessionAccessor(BaseAccessor):
 
         return to_return.scalars().all()
 
-    async def get_filter_count(
+    async def get_filter_count(  # noqa
         self,
         session: AsyncSession,
         max_players: int = 9,

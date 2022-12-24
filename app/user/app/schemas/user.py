@@ -1,39 +1,39 @@
-from pydantic import BaseModel, EmailStr
+from __future__ import annotations
+
+from typing import Optional
+
+from pydantic import EmailStr
 
 from structures.enums import RegistrationTypeEnum
 
+from .base import UserServiceSchema
 
-class UserRegistrationSchema(BaseModel):
+
+class UserRegistrationSchema(UserServiceSchema):
     email: EmailStr
     username: str
     password: str
 
 
-class UserTelegramRegistrationSchema(BaseModel):
+class UserTelegramRegistrationSchema(UserServiceSchema):
     telegram: int
     username: str
 
 
-class UserLoginSchema(BaseModel):
+class UserLoginSchema(UserServiceSchema):
     email: EmailStr
     password: str
 
 
-class UserSchema(BaseModel):
+class UserSchema(UserServiceSchema):
     id: int
-    telegram: int | None
-    email: EmailStr | None
+    telegram: Optional[int] = None
+    email: Optional[EmailStr] = None
     username: str
     registration_type: RegistrationTypeEnum
 
-    class Config:
-        orm_mode = True
 
-
-class UserViewSchema(BaseModel):
+class UserViewSchema(UserServiceSchema):
     id: int
-    telegram: int | None
+    telegram: Optional[int] = None
     username: str
-
-    class Config:
-        orm_mode = True

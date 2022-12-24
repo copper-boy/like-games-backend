@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import select, update
@@ -6,7 +8,7 @@ from sqlalchemy.orm import joinedload
 
 from orm import RoundModel
 from store.base import BaseAccessor
-from structures import enums, exceptions
+from structures import enums
 
 
 class RoundAccessor(BaseAccessor):
@@ -21,7 +23,7 @@ class RoundAccessor(BaseAccessor):
             enums.RoundTypeEnum.showdown: enums.RoundTypeEnum.preflop,
         }
 
-    async def create_round(self, session: AsyncSession) -> RoundModel:
+    async def create_round(self, session: AsyncSession) -> RoundModel:  # noqa
         to_return = RoundModel()
 
         session.add(to_return)
@@ -29,27 +31,26 @@ class RoundAccessor(BaseAccessor):
         return to_return
 
     async def is_already_taken(self, session: AsyncSession, round_id: int) -> bool:
-        cursor = await session.execute(
-            select(RoundModel)
-            .where(RoundModel.id == round_id)
-            .options(joinedload(RoundModel.session))
-        )
-        to_check = cursor.scalar()
+        to_check = await self.get_round_by(session=session, where=(RoundModel.id == round_id))
 
         return bool(
             to_check.session
         )  # If no relationship is assigned to RoundModel.session then bool cast will return False.
 
-    async def update_round(self, session: AsyncSession, round_id: int, values: dict) -> None:
+    async def update_round(
+        self, session: AsyncSession, round_id: int, values: dict
+    ) -> None:  # noqa
         await session.execute(update(RoundModel).where(RoundModel.id == round_id).values(**values))
 
-    async def get_round_by(self, session: AsyncSession, where: Any) -> RoundModel:
-        to_return = await session.execute(select(RoundModel).where(where))
+    async def get_round_by(self, session: AsyncSession, where: Any) -> RoundModel:  # noqa
+        to_return = await session.execute(
+            select(RoundModel).where(where).options(joinedload(RoundModel.session))
+        )
 
         return to_return.scalar()
 
     async def call_next_round(self, session: AsyncSession, round_id: int) -> enums.RoundTypeEnum:
-        round = await self.get_round_by(session=session, where=(RoundModel.id == round_id))
+        round = await self.get_round_by(session=session, where=(RoundModel.id == round_id))  # noqa
 
         to_update = self.to_select.get(round.type, None)
         await self.update_round(session=session, round_id=round.id, values={"type": to_update})

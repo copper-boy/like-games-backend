@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import asc, delete, func, select, update
@@ -27,7 +29,7 @@ class PlayerAccessor(BaseAccessor):
 
         return to_return
 
-    async def update_player(
+    async def update_player(  # noqa
         self, session: AsyncSession, player_id: int, values: dict
     ) -> None:  # noqa
         await session.execute(
@@ -57,7 +59,7 @@ class PlayerAccessor(BaseAccessor):
 
         return to_return.scalars().all()
 
-    async def get_players_count(self, session: AsyncSession, session_id: int) -> int:
+    async def get_players_count(self, session: AsyncSession, session_id: int) -> int:  # noqa
         to_return = await session.execute(
             select(func.count(PlayerModel.id))
             .where(PlayerModel.session_id == session_id)
@@ -79,7 +81,7 @@ class PlayerAccessor(BaseAccessor):
 
         return to_return.scalars().all()
 
-    async def clear_players(self, session: AsyncSession, session_id: int) -> None:
+    async def clear_players(self, session: AsyncSession, session_id: int) -> None:  # noqa
         await session.execute(
             update(PlayerModel)
             .where(PlayerModel.session_id == session_id)

@@ -1,19 +1,24 @@
+from __future__ import annotations
+
 from db.session import session as sessionmaker
-from misc import router
-from schemas import SessionSchema, WSEventSchema
-from structures.ws import WSConnection
+from likeevents import LikeF, LikeRouter
+from schemas import EventSchema, SessionSchema
+from structures.ws import WS
 from utils import helpers
 
+router = LikeRouter()
+path = "helperGetSession"
 
-@router.helper(to_filter="session")
-async def session_handler(data: WSEventSchema, ws: WSConnection) -> None:
+
+@router.like_helper(LikeF.path == path)
+async def session_handler(event: EventSchema, ws: WS) -> None:
     """
     Returns the session the player is bound to
 
-    :param data:
+    :param event:
       optional data received from client
     :param ws:
-      constructed websocket connection
+      constructed ws connection
     :return:
       None
     :raise WSStateError:
@@ -23,10 +28,9 @@ async def session_handler(data: WSEventSchema, ws: WSConnection) -> None:
     async with sessionmaker.begin() as session:
         s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
 
-    answer_event = WSEventSchema(
-        event="game",
+    answer_event = EventSchema(
+        path=path,
         payload={
-            "to_filter": "session",
             "data": SessionSchema.from_orm(s),
         },
     )

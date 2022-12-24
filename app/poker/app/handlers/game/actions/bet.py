@@ -1,21 +1,26 @@
+from __future__ import annotations
+
 from db.session import session as sessionmaker
-from misc import router
-from schemas import WSEventSchema
+from likeevents import LikeF, LikeRouter
+from schemas import EventSchema
 from structures.enums import PlayerActionEnum
 from structures.exceptions import WSCommandError
-from structures.ws import WSConnection
+from structures.ws import WS
 from utils import helpers
 
+router = LikeRouter()
+path = "gameDoBet"
 
-@router.game(to_filter="bet")
-async def bet_handler(data: WSEventSchema, ws: WSConnection) -> None:
+
+@router.like_game(LikeF.path == path)
+async def bet_handler(event: EventSchema, ws: WS) -> None:
     """
     Executes the bet action
 
-    :param data:
+    :param event:
       required data received from client
     :param ws:
-      constructed websocket connection
+      constructed ws connection
     :return:
       None
     :raise WSCommandError:
@@ -24,7 +29,7 @@ async def bet_handler(data: WSEventSchema, ws: WSConnection) -> None:
       when game not started
     """
 
-    ws_bet = data.payload.data.get("bet")
+    ws_bet = event.payload.data.get("bet")
 
     async with sessionmaker.begin() as session:
         s = await helpers.get_session_with_raise(session=session, session_id=ws.session_id)
@@ -50,4 +55,5 @@ async def bet_handler(data: WSEventSchema, ws: WSConnection) -> None:
             player_id=player.id,
             bet=to_bet,
             action=PlayerActionEnum.bet,
+            ws=ws,
         )

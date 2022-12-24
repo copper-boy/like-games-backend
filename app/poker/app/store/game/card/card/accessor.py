@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import select, update
@@ -10,7 +12,7 @@ from structures.enums import CardPositionEnum
 
 
 class CardAccessor(BaseAccessor):
-    async def create_card(
+    async def create_card(  # noqa
         self, session: AsyncSession, deck: DeckModel, card: LogicCardSchema
     ) -> CardModel:
         to_return = CardModel(rank=card.rank, suit=card.suit, deck=deck)

@@ -1,15 +1,15 @@
-from .allin import allin_handler
-from .bet import bet_handler
-from .call import call_handler
-from .check import check_handler
-from .fold import fold_handler
-from .up import up_handler
+from .allin import router as allin_router
+from .bet import router as bet_router
+from .call import router as call_router
+from .check import router as check_router
+from .fold import router as fold_router
+from .up import router as up_router
 
 __all__ = (
-    "allin_handler",
-    "bet_handler",
-    "call_handler",
-    "check_handler",
-    "fold_handler",
-    "up_handler",
+    "allin_router",
+    "bet_router",
+    "call_router",
+    "check_router",
+    "fold_router",
+    "up_router",
 )

@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from aiohttp import ClientResponseError
 from loguru import logger
@@ -7,16 +7,12 @@ from sqlalchemy import and_
 from core import tools
 from db.session import session as sessionmaker
 from orm import PlayerModel, SessionModel, UserModel
-from schemas import IntegrationPotUpdateSchema, WSEventSchema
-from structures.enums import WSEventEnum
+from schemas import IntegrationPotUpdateSchema
 from structures.exceptions import DatabaseError, WSConnectionError, WSStateError
 from utils import helpers
-from ws import WSManager
 
 
-async def new_player(
-    manager: WSManager, session_id: int, user_id: int, pot: int
-) -> tuple[int, PlayerModel]:
+async def new_player(session_id: int, user_id: int, pot: int) -> tuple[int, PlayerModel]:
     async with sessionmaker.begin() as asyncsession:
         session = await tools.store.game_session_accessor.get_session_by(
             session=asyncsession,
@@ -43,21 +39,11 @@ async def new_player(
             assign_to=session,
         )
 
-    answer_event = WSEventSchema(
-        event=WSEventEnum.server_side,
-        payload={"to_filter": "new_player", "data": {"player_id": player.id}},
-    )
-    await manager.broadcast_json(event=answer_event)
-
     new_balance = pot - session.game.chips_to_join
     return new_balance, player
 
 
-async def delete_player(
-    manager: Optional[WSManager],
-    player_id: int,
-    preview_balance: int,
-) -> None:
+async def delete_player(player_id: int, preview_balance: int) -> None:
     async with sessionmaker.begin() as asyncsession:
         player = await helpers.get_player_by_id(session=asyncsession, player_id=player_id)
         if player.game_chips:
@@ -72,10 +58,3 @@ async def delete_player(
         await tools.store.game_player_accessor.delete_player(
             session=asyncsession, player_id=player_id
         )
-
-    if manager:
-        answer_event = WSEventSchema(
-            event=WSEventEnum.server_side,
-            payload={"to_filter": "delete_player", "data": {"player_id": player_id}},
-        )
-        await manager.broadcast_json(event=answer_event)

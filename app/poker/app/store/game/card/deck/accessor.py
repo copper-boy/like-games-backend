@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from orm import CardModel, DeckModel
+from orm import DeckModel
 from store.base import BaseAccessor
 from structures.enums import CardPositionEnum
-from structures.exceptions.game.errors import NotAcceptablePositionError
 
 
 class DeckAccessor(BaseAccessor):
@@ -30,7 +31,7 @@ class DeckAccessor(BaseAccessor):
 
         return bool(deck.session)
 
-    async def get_deck_by(self, session: AsyncSession, where: Any) -> DeckModel:
+    async def get_deck_by(self, session: AsyncSession, where: Any) -> DeckModel:  # noqa
         to_return = await session.execute(
             select(DeckModel)
             .where(where)
@@ -72,5 +73,5 @@ class DeckAccessor(BaseAccessor):
             )
             to_access += 1
 
-    async def delete_deck(self, session: AsyncSession, deck_id: int) -> None:
+    async def delete_deck(self, session: AsyncSession, deck_id: int) -> None:  # noqa
         await session.execute(delete(DeckModel).where(DeckModel.id == deck_id))

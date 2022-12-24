@@ -1,3 +1,3 @@
-from .payload import WSPayloadSchema
+from .payload import PayloadSchema
 
-__all__ = ("WSPayloadSchema",)
+__all__ = ("PayloadSchema",)

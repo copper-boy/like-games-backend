@@ -1,9 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import tools
 from orm import PlayerModel
 from utils import helpers
+
+if TYPE_CHECKING:
+    from ws import WSManager
 
 
 async def get_player(session: AsyncSession, user_id: int) -> PlayerModel:
@@ -32,7 +39,7 @@ async def get_player_with_last_player(
 
 
 async def delete_players_with_zero_balance(
-    session: AsyncSession, session_id: int, manager
+    session: AsyncSession, session_id: int, manager: WSManager
 ) -> None:
     players = await tools.store.game_player_accessor.get_players_by(
         session=session,
